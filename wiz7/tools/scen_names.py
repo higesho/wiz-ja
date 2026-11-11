@@ -4,7 +4,8 @@ SCENARIO.GLD は固定長レコードの並びで、名前は 16 バイトの欄
   品物: ファイル位置 ≡ 32 (mod 72) の欄 (0x380〜0xa400)。"/" は 2 行に分けて表示する位置
   怪物: 16 バイト間隔で 4 つ並ぶ欄 (単数・複数・未識別の単数・複数)。0x37000〜0x45000
   人物: ファイル位置 ≡ 72 (mod 148) の欄 (0x45000〜0x49000)
-DLL は SCENARIO.GLD の読み込みを横取りし、jpmod/scen_ja.txt の「ファイル位置<TAB>訳」をその位置に書き込む。
+DLL は SCENARIO.GLD の読み込みを横取りし、jpmod/scen_ja.txt の「ファイル位置<TAB>原文<TAB>訳」に従い、
+その位置の中身が原文と一致したときだけ訳を書き込む。
 
   python tools/scen_names.py extract   translation/scen_en.tsv (位置・種類・原文) を書く
   python tools/scen_names.py build     translation/scen_names_ja.tsv (原文→訳) から translation/scen_ja.txt を作る
@@ -21,7 +22,7 @@ import batch  # noqa: E402
 GLD = batch.MOD.parent / "wizardry7gold" / "SCENARIO.GLD"
 EN_TSV = batch.TR / "scen_en.tsv"
 NAMES = batch.TR / "scen_names_ja.tsv"     # 原文<TAB>訳 (同じ原文は同じ訳)
-OUT = batch.TR / "scen_ja.txt"             # ファイル位置<TAB>訳 (DLL が読む)
+OUT = batch.TR / "scen_ja.txt"             # ファイル位置<TAB>原文<TAB>訳 (DLL が読む)
 FIELD = 16
 NAME_RE = re.compile(rb"[A-Z0-9][A-Z0-9 '\.\-&,!/()]{0,14}")
 
@@ -145,7 +146,8 @@ def cmd_build():
     names = load_names()
     n = bad = 0
     with OUT.open("w", encoding="utf-8", newline="\n") as f:
-        f.write("# SCENARIO.GLD の名前欄の訳: ファイル位置(16進)<TAB>訳  (tools/scen_names.py build が生成)\n")
+        f.write("# SCENARIO.GLD の名前欄の訳: ファイル位置(16進)<TAB>原文<TAB>訳  (tools/scen_names.py build が生成)\n")
+        f.write("# DLL は読み込んだデータのその位置が「原文+NUL」と一致したときだけ訳に置き換える (版の違いで崩れないように)\n")
         for o, k, s in rows:
             j = names.get(s)
             if not j:
@@ -155,7 +157,7 @@ def cmd_build():
                 print(f"{err}: {s} → {j}")
                 bad += 1
                 continue
-            f.write(f"{o:06x}\t{j}\n")
+            f.write(f"{o:06x}\t{s}\t{j}\n")
             n += 1
     print(f"{OUT}: {n} 欄 (長すぎて除外 {bad})")
 
