@@ -1,0 +1,68 @@
+# Windows 標準の画面 (起動時メニュー・設定ダイアログ・メニューバー・確認ボックス) の訳
+# 原文<TAB>訳文。原文は EXE のリソースと完全一致 (& はアクセスキー)。
+# メニュー項目の「原文\tショートカット」はタブより前だけを照合する。
+
+# 起動時メニュー (ダイアログ 138〜142)
+Character Menu	キャラクターメニュー
+Add Character	キャラクターを加える
+Load Save Game	セーブデータを読み込む
+Import (BANE)	取り込み (BANE)
+Quit Game	ゲームを終了
+Review Member	メンバーを確認
+Review Memeber	メンバーを確認
+Dismiss Member	メンバーを外す
+Start New Game	新しいゲームを始める
+
+# ゲーム中のメニュー (ダイアログ 139)
+Resume Play	ゲームに戻る
+Save and Resume	セーブして続ける
+Save and Quit	セーブして終了
+Quit - NO SAVE	セーブせずに終了
+
+# 設定 (IDD_CONFIGURE, 152)
+Wizardry Gold Configuration	Wizardry Gold の設定
+Sound On	効果音
+Music On	音楽
+Audio On	音声
+Save	保存
+Cancel	キャンセル
+Sound Options	サウンド
+Game Difficulty	難易度
+Text Delay Settings	文章の表示時間
+Combat Delay Settings	戦闘の表示時間
+Easy	易しい
+Medium	普通
+Hard	難しい
+
+# ファイルを開く (108)
+File Open	ファイルを開く
+Filename:	ファイル名:
+
+# 終了確認 (132)
+Exit	終了
+Are you sure?	本当に終了しますか？
+
+# バージョン情報 (131)
+About Wizardry Gold	Wizardry Gold について
+Out Of Here!	閉じる
+
+# 連絡先 (109)
+Where to contact Sirtech	Sir-Tech の連絡先 (当時)
+
+# ボスキー (130)
+Boss Key Configuration	ボスキーの設定
+Please Select Picture	画像を選んでください
+The Boss Key is a handy little feature that allows you to hide your screen by pressing the "Ctrl-B" key on your keyboard.	ボスキーは、キーボードの Ctrl-B を押すと画面を隠せる便利な機能です。
+We have include a screen capture utility called WIZCAP that allows you to capture screens shots. Once captured they will appear in the diologue box ->	画面を取り込むユーティリティ WIZCAP を同梱しています。取り込んだ画像はこの欄に表示されます ->
+
+# メニューバー (メニュー 134)
+&File	ファイル(&F)
+&Disk Options	ディスクの設定(&D)
+&Configuration	設定(&C)
+&Game Settings	ゲームの設定(&G)
+&Help	ヘルプ(&H)
+&About	バージョン情報(&A)
+&Hint Book	ヒントブック(&H)
+&Manual	マニュアル(&M)
+Ma&p	地図(&P)
+Readme	お読みください

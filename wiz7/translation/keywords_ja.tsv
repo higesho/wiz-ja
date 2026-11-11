@@ -1,0 +1,287 @@
+# キーワード<TAB>訳文中の訳語 (表記の揺れはカンマ区切り)<TAB>原文の本文での出現数
+# 訳語が空ならそのキーワードは書き添えない
+018@67C1		3
+023@41A2		3
+10000 GOLD	1万金貨	2
+5 FLOWERS	五花	15
+ABBEY	修道院	12
+ACCIDENT	事故	1
+ALE	エール	3
+ALMAGORTE	アルマゴルテ	6
+AMMO	弾薬,弾	4
+ANCESTOR		0
+ARCHIVE		0
+ARM	腕	6
+ARMOR	脚防具,防護盾,鎧	23
+ARMORY	武器庫,武具店	4
+ARMS OF ARGUS	アーガスの武具,アーガスの武器店	2
+ARROW	矢	4
+ASSASSIN	暗殺者	6
+ASTRAL DOMINAE	アストラル・ドミナエ	26
+BALBRAK	バルブラク	10
+BANNER	旗	3
+BARBANA	バーバナ	1
+BARLONE	バルローネ	9
+BE THANKFUL YE THAT HATH AN EAR	耳のある者は幸いなり	2
+BELA	ベラ	6
+BELCANZOR	ベルカンゾル	8
+BERTIE	バーティ	8
+BERTIE'S	バーティの店,バーティの	4
+BETRAY	裏切	3
+BETRAYER	裏切り者	4
+BEWARE	気をつけろ,用心せよ	20
+BIRD	鳥	8
+BLACK MARKET	闇市	6
+BLACK SHIP	黒い船	24
+BLACK SHIP COMMAND	黒い船の司令部,黒い船の指揮	4
+BLIENMEIS	ブラインマイス	6
+BLIND	盲人,盲目	6
+BLINDMEIS	ブラインマイス翁	7
+BLUEPRINT	設計図	1
+BLUNDERBUSS	ブランダーバス	2
+BOAT	小舟,船	13
+BODY	胴	27
+BOERIGARD	ボーリガード	7
+BOOK	本	21
+BORDER	国境	2
+BOSS		0
+BOW	弓	5
+BRIDGE	橋	14
+BROMBADEG	ブロンバデグ	6
+BROTHER MOSER	モーザー修道士,修道士モーサー	2
+CABLE	ケーブル,綱	3
+CARMELA	カルメラ	1
+CASTLE	城	23
+CEMETERY	墓地	2
+CENTRAL SECURITY	中央警備	3
+CHARM	魅了	1
+CHURCH	教会	4
+CITY OF SKY	天空都市	21
+CIVIL WAR	内戦	15
+COIN	硬貨,銅貨	8
+CONSTABULARY	警邏隊	5
+CONTRABAND	禁制品	1
+CREDIT	クレジット	4
+CRUSADER	聖戦士	1
+CRUSADERS	十字軍,クルセイダーズ	14
+D'RANG	ドラン・トラン,ドラン	6
+DAHLIA	ダリア	3
+DANE	デイン	107
+DANGER	危険	5
+DARK SAVANT	ダークサヴァント	28
+DARTAEN ALLIANCE IS BROKEN	ダルタエン同盟は破られた	1
+DEDAELIS	ダイダリス	3
+DESTINY	運命	24
+DESTROY	滅ぼす,滅ぼし,叩き潰	14
+DIONYSCEUS	ディオニセウス	34
+DIVINE LIGHT	神聖なる光,神の光	8
+DIVINE PLAN	神の計画	3
+DOMAIN	ゴーン領,領	7
+DON BARLONE	ドン・バルローネ	6
+DRAGON	竜	21
+DREAM	夢	5
+DRINK	飲み物,飲む	2
+DUNGORE	ダンゴア	1
+EGG	卵	7
+EYRN	エアン川,エアン	9
+FABLE		0
+FATHER RULAE	ルーレ神父	15
+FEATHER	羽	1
+FELLOWSHIP	同胞団	27
+FIRING RANGE	射撃場	7
+FLOWER	青い花,野花,花	12
+FOOTSTEP		0
+FOREFATHER		0
+FOREST HOME	森の住処,森の故郷	7
+FORFEIT		1
+FORFIET		0
+FUNHOUSE	見世物小屋	13
+GALIERE	ガリエール	9
+GEAR	装備,歯車	7
+GIANTLAND		0
+GIRL	娘	29
+GLOBE	地球儀,球体	39
+GOLD	金貨	48
+GORN	ゴーン	65
+GOWN	法衣,王衣	2
+GRAN MELANGE	グラン・メランジュ	4
+GREAT MAKER	偉大なる造物主,造物主	2
+GREAT TEST	大試練,真の試練	3
+GROMO	グロモ	6
+GRUNTWRAPPER	グラントラッパー	5
+GUIDANCE	導き	1
+GUILD	ギルド	8
+H'JENN-RA	ジェンラ	40
+HEADQUARTER		0
+HEAL	治癒,癒し,癒え	3
+HECTOR	ヘクター	3
+HELAZOID	ヘラゾイド	20
+HELP	手助け,助け	26
+HERB		0
+HIGARDI	ハイガーディ	11
+HIGARDIA	ハイガーディア	3
+HIGH FATHER	高位神父	1
+HISTORY	歴史	9
+HOLY COVENANT	聖なる契約	2
+HOLY PATH	聖なる道	24
+HOLY WORD	聖なる言葉	2
+HOLY WORK	聖なる御業	28
+HORATHA	ホラサ	2
+HOUSE OF DANE	デイン家	33
+I.U.F.		40
+ISLE OF CRYPT		0
+JAN-ETTE	ジャン＝エット	5
+JONGA	ジョンガ	2
+JUICE	汁	5
+K'BORRA	ボッラ	8
+KABOMM	カボム	4
+KE-LI	ケ＝リ	8
+KING	ゴーン王,ウルガー王,王	28
+KUI'SA-KA	クイ＝サ＝カ	6
+KYMAS TURAN	キーマス・トゥラン	14
+LEGACY	遺産	4
+LETTER	手紙,文字	7
+LEWARX	ルワークス	29
+LIBRARY	図書館	6
+LITTLE	小さな,ほとんど,やや	45
+LIVING DEAD	生ける屍	1
+LOCATED IN PARAGRAPH ^  LINE		0
+LORE	伝承	1
+LOST TEMPLE	失われた神殿	1
+MACHINE	飛行機械,機械	14
+MAGIC	魔法	26
+MAGIK	マジック,魔術	3
+MAGNA DANE	マグナ・デイン	20
+MAN		23
+MAP	地図	26
+MAPPIECE		0
+MICK THE PICK	鍵開けミック	4
+MONEY		0
+MOSER	モーサー,モーザー	2
+MUNK	マンク	30
+MUNKHARAM	マンクハラマ	10
+MUNKHARAMA	マンクハラマ	38
+MURKATOS	マーカトス	21
+MUSKET	マスケット銃,小銃	2
+MYRMIDEON	ミュルミドン	7
+NARALDA	ナラルダ	1
+NARGISST	ナルギスト	2
+NEW CITY	ニューシティ	49
+NOTE	気づく,思い至る	12
+NYCTALINTH	ニクタリンス	22
+OLD CITY	旧市街	11
+ORDER	隊列,秩序	20
+ORKOGRE	オーコーグル	24
+OTHERS		19
+OUR PARTY	我がパーティ	1
+PALACE	宮殿	9
+PALUKE	パルーク	4
+PHOONZANG	フーンザン	7
+PIT	穴	30
+PLAN	神の計画,計画	5
+POTION	ポーション	8
+POWDER	火薬,粉	6
+PRESERVATION	保存の殿堂,殿堂	6
+PRISONER		0
+PROFESSOR	教授	1
+PROPHECY	予言	17
+QUEEN	女王	12
+RATSKELL	ラッツケル	10
+RATSKELL'S	ラッツケルの店,ラッツケル	10
+RATSPUTIN	ラッツプーチン	6
+RATTKIN	ラットキン	23
+RATTKIN MAGI	ラットキンの魔術師	2
+RATTKIN RUINS	ラットキンの廃墟	5
+RAZUKA	ラズカ	33
+RECORD	記録	2
+RECRUITS	新兵	8
+RED BOOK	暗赤色の本	2
+REFLEXTION	反射神経,反射	2
+RHALLICK	ラリック	5
+RING	指輪	23
+RING OF REFLEXTION	反射の指輪	1
+RIVER	エアン川,川沿い,川	21
+ROCKET	ロケット	2
+ROOM	大部屋,部屋	62
+ROSSARIAN	ロッサリアン	5
+RULAE	ルーレ	15
+S.T.F.	特殊戦術部隊	6
+S:18,49 D:34,82,+17		1
+SACRAMENT	聖なる秘跡,秘跡	3
+SACRED STONE	聖なる石	4
+SAVANT	ダークサヴァント,サヴァント	62
+SAVANT GUARDS	サヴァント衛兵	1
+SCHOOL	学派,流派	8
+SCOUTS	斥候部隊,斥候	4
+SCROLL	巻物	5
+SEA	海	32
+SEA MONSTER		0
+SEA OF SORROW		0
+SECRET SCHOOL	秘密の学派,秘密の学校	3
+SHIP	黒い船,船	67
+SHRITIS	シュリティス	44
+SIGN	看板,兆し,印	14
+SKILL	技能	5
+SLED	そり	3
+SLEEP	睡眠,眠り	2
+SOGHEIM	ソゲイム	1
+SPAWNING	産み落とし	6
+SPECIAL SAUCE		0
+SPECIALTY		0
+SPELL	呪文	15
+SPICE	香辛料	1
+SPIES	スパイ	5
+SPIRIT	精神,魂	12
+SPIRITUAL		0
+SPY	スパイ	7
+STAFF	杖,棒	15
+STATUE	彫像,像	33
+STAY	近寄らない,近寄らねえ,外れておく	10
+STICK	苦痛の杖,突き出,刺す,杖	4
+STONE	石化,石	62
+STRANGER		0
+STRANGERS	異邦人,余所者,旅の者	10
+STRIKE	強打,攻めかか,襲いかか	7
+STUDY	研究,学び	5
+SUPPLIES	物資	2
+SUPPLY DEPOT	補給基地	9
+SWIM		0
+SWORD	剣	21
+T'RANG	トラン	161
+TEA	茶	6
+TEMPLE	神殿	27
+THE DANE	デイン人,デイン	6
+THE PROPHECY	予言	13
+THE TRIAL	同胞団の試練,試練	3
+THESMINSTER	テスミンスター修道院,テスミンスター	10
+THIEF	盗賊	1
+TOLLEN DANE		0
+TORQUESADE	トルクサード	4
+TOWER	大塔	52
+TRAMONTAINE	トラモンテーン	2
+TREASURE	お宝,宝	8
+TRIAL	同胞団の試練,試練	4
+TROPHY	戦利品	3
+TSHOBER	トショーバー	10
+UKPYR	ウクピア	38
+ULGAR	ウルガー	12
+UMPANI	ウンパニ	87
+UNDERWORLD	地下世界,冥界	5
+URN	壺	14
+VENGEANCE	復讐	6
+VESSEL	船	16
+VI DOMINAE		0
+VICTORY	勝利	8
+WAR	内戦,戦争,戦火	24
+WEAPON	武器	11
+WILDERNESS	荒野	6
+WING FUR	翼毛,羽毛	4
+WITCH	魔女	23
+WITCHES	魔女	3
+WIZARD	魔導師,魔術師	16
+WOMAN	女性,女	9
+WORD	合言葉,死の言葉,教え	35
+WUNDERLAND	ヴンダーラント	1
+XANDASA	ザンダサ	1
+XHENG	ゼン・シェン	10
+YAMO	ヤモ	32
