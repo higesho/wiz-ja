@@ -1,0 +1,230 @@
+5000	s	モンスターたちを倒した！
+5001	s	生存者はそれぞれ $ の経験を得た
+5002	s	戦利品の分け前は各自 $ 金貨
+5003	s	全員に $ の経験ボーナス
+5004	s	% @を見つけた
+5005	s	$ ^
+5006	s	ポーション
+5007	s	巻物
+5008	s	粉薬
+5010	s	^,$ レベルアップした！
+5011	s	HPが $ 上がった！
+5012	s	HPが $ 上がった！
+5013	s	スタミナが上がった！
+5014	s	$が上がった！
+5015	s	^の$が上がった！
+5050	s	力
+5051	s	知恵
+5052	s	信仰
+5053	s	体力
+5054	s	器用
+5055	s	速さ
+5056	s	魅力
+5057	s	業
+5100	s	\x1b\x08\x09\x0a\x0b\x0d
+5101	s	\x7f__山分け_________\x7f
+5102	s	{T}アイテムを取る>
+5103	s	なし
+5104	s	重さ
+5105	s	誰が取る？_______
+5106	s	終了__
+5107	s	{E}終了
+5108	s	^_いっぱい_^
+5109	s	^_重要アイテム_________^
+5200	s	\x0f___宝箱_____\x16___\x0f
+5201	s	{I}調べる
+5202	s	{D}罠を外す
+5203	s	{O}開ける
+5204	s	{S}呪文
+5205	s	{L}立ち去る
+5220	s	誰が罠を外す？__
+5221	s	終了__
+5222	s	{E}終了
+5223	s	誰が調べる？_____
+5224	s	誰が唱える？__
+5225	s	誰が開ける？__
+5226	s	??? 罠 ???
+5227	s	罠が作動した！
+5228	s	宝箱に罠はなかった
+5229	s	罠を外した！
+5230	s	罠を外せなかった！
+5231	s	に
+5232	s	のダメージ
+5233	s	は
+5234	s	宝箱が開いた！
+5235	s	宝箱は開かなかった
+5250	s	沈黙した
+5251	s	恐怖した
+5252	s	眠りに落ちた
+5253	s	麻痺した
+5254	s	盲目になった
+5255	s	毒を受けた
+5256	s	病気になった
+5257	s	野菜になった！
+5258	s	吐き気がした
+5259	s	呪われた
+5260	s	殺された
+5261	s	致命傷
+5262	s	気絶した！
+5263	s	石になった！
+5264	s	死んだ！
+5265	s	弱体化した
+5266	s	失った
+5267	s	力
+5268	s	体力
+5269	s	HP
+5270	s	幻の手が現れた！
+5271	s	は攻撃された！
+5272	s	はひどく殴られた！
+5273	s	は首を絞められ、叩きつぶされた！
+5274	s	幻の手は手を振り、去っていった…
+5275	s	吐き気がした
+5300	s	罠なし
+5301	s	ヴォーパルの刃
+5302	s	恐怖の雲
+5303	s	衛兵の警報
+5304	s	毒の短剣
+5305	s	プリズムの矢
+5306	s	衰弱の光線
+5307	s	魔封じの結界
+5308	s	エナジードレイン
+5309	s	次元の扉
+5310	s	メドゥーサの呪い
+5311	s	鎧溶かし
+5312	s	幻の手
+5313	s	有毒な蒸気
+5314	s	火炎爆弾
+5315	s	死の口づけ
+5500	s	杖&短剣
+5501	s	剣
+5502	s	斧
+5503	s	棍棒&フレイル
+5504	s	長柄武器&棒
+5505	s	投擲
+5506	s	スリング
+5507	s	弓
+5508	s	盾
+5509	s	素手&蹴り
+5510	s	水泳
+5511	s	探索
+5512	s	音楽
+5513	s	話術
+5514	s	早業
+5515	s	解錠術
+5516	s	忍術
+5517	s	防御
+5518	s	速さ
+5519	s	移動
+5520	s	狙い
+5521	s	威力
+5522	s	魔法具
+5523	s	神話学
+5524	s	書写
+5525	s	錬金術
+5526	s	神学
+5527	s	神智学
+5528	s	魔道学
+5529	s	斬術
+5530	s	技能ポイント
+7000	s	TELL
+7001	s	IS
+7002	s	ARE
+7003	s	AM
+7004	s	HAVE
+7005	s	WANT
+7006	s	GIVE
+7007	s	TAKE
+7008	s	USE
+7009	s	GET
+7030	s	WHO
+7031	s	WHAT
+7032	s	WHEN
+7033	s	WHERE
+7034	s	WHICH
+7035	s	WHY
+7036	s	HOW
+7040	s	NOT 
+7041	s	TO 
+7050	s	DO
+7051	s	CAN
+7052	s	WILL
+7053	s	MAY
+7054	s	SHALL
+7055	s	WOULD
+7056	s	SHOULD
+7070	s	YOU
+7071	s	ME
+7072	s	WE
+7073	s	US
+7074	s	US
+7075	s	WE
+7076	s	I
+7077	s	YOU
+7078	s	ME
+7079	s	YOU
+7090	s	IT
+7091	s	THIS
+7092	s	THAT
+7093	s	THERE
+7094	s	HE
+7095	s	SHE
+7096	s	HIM
+7097	s	HER
+7098	s	ONE
+7099	s	THEM
+7100	s	THEY
+7120	s	HI
+7121	s	BYE
+7122	s	YES
+7123	s	NO
+7124	s	MAYBE
+7125	s	THANK
+7126	s	SHIT
+7127	s	FORGET
+7128	s	HELP
+7129	s	HA
+7140	s	OF
+7141	s	THE
+7142	s	ABOUT
+7143	s	FOR
+7144	s	A
+7145	s	AN
+7146	s	SOME
+7160	s	HI/HELLO/HAIL/
+7161	s	BYE/GOODBYE/QUIT/FAREWELL/
+7162	s	YES/SURE/OK/YEA/YEAH/
+7163	s	NO/NOPE/NEVER/
+7164	s	THANK/THANKS/
+7165	s	FORGET/NEVERMIND/
+7166	s	SHIT/FUCK/HELL/
+7167	s	TELL/TALK/EXPLAIN/KNOW/THINK/SPEAK/SAY/
+7168	s	DO/DOES/
+7169	s	GET/FIND/BUY/OBTAIN/PURCHASE/
+7170	s	GIVE/SELL/SHOW/TRADE/BARTER/
+7171	s	WANT/NEED/LIKE/
+7172	s	HELP/ASSIST/
+7173	s	HA/FUNNY/
+7174	s	TELL WHO IS/NAME/NAMES/
+7175	s	YOU/YOUR/
+7176	s	HAVE/HAS/OWNS/POSSESS/POSSESSES/
+7177	s	WHAT TELL YOU/RUMOR/RUMORS/HINT/HINTS/CLUE/CLUES/
+7178	s	ARE/ABOUT/
+7179	s	GET IN/OPEN/UNLOCK/
+7180	s	DO NOT/DON'T/
+7181	s	CAN NOT/CAN'T/
+7182	s	WILL NOT/WON'T/
+7183	s	WOULD NOT/WOULDN'T/
+7184	s	ARE NOT/AREN'T/
+7185	s	I AM/I'M/
+7186	s	I WILL/I'LL/
+7187	s	YOU ARE/YOU'RE/
+7188	s	WE ARE/WE'RE/
+7189	s	THEY ARE/THEY'RE/
+7190	s	HE IS/HE'S/
+7191	s	SHE IS/SHE'S/
+7192	s	WHAT IS/WHAT'S/
+7193	s	WHO IS/WHO'S/
+7194	s	WHERE IS/WHERE'S/
+7195	s	HOW IS/HOW'S/
+7196	s	WHEN IS/WHEN'S/
+7197	s	THAT IS/THAT'S/

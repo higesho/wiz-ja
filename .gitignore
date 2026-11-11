@@ -1,0 +1,8 @@
+# 原作のファイルとビルド結果は載せない
+original/
+out/
+release/
+dist/
+preview/
+*.zip
+__pycache__/

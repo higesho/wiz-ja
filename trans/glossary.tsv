@@ -1,0 +1,85 @@
+# 英語	日本語	備考
+HUMAN	人間
+ELF	エルフ
+DWARF	ドワーフ
+GNOME	ノーム
+HOBBIT	ホビット
+FAERIE	フェアリー
+LIZARDMAN	リザードマン
+DRACON	ドラコン
+FELPURR	フェルパー
+RAWULF	ラウルフ
+MOOK	ムーク
+FIGHTER	戦士
+MAGE	魔術師
+PRIEST	僧侶
+THIEF	盗賊
+RANGER	レンジャー
+ALCHEMIST	錬金術師
+BARD	吟遊詩人
+PSIONIC	超能力者
+VALKYRIE	ヴァルキリー
+BISHOP	司教
+LORD	君主
+SAMURAI	侍
+MONK	修道僧
+NINJA	忍者
+MALE	男
+FEMALE	女
+LVL	レベル	欄が狭い場合は「Lv」可
+RNK	称号
+EXP	経験
+MKS	倒数	モンスター撃破数
+STR	力
+INT	知恵
+PIE	信仰
+VIT	体力
+DEX	器用
+SPD	速さ
+PER	魅力	PERSONALITY
+KAR	業	KARMA
+HP	HP
+STM	スタミナ	欄が狭い場合「ST」
+CND	状態
+GP	金
+CC	CC	キャリング・キャパシティ（所持重量）
+ARMORCLASS	アーマークラス	欄が狭い場合「AC」
+AC	AC
+EQUIP	装備
+SPELL	呪文
+TRADE	交換
+ASSAY	鑑定
+SWAG	戦利品
+MERGE	合成
+USE	使う
+DROP	捨てる
+SKILL	技能
+EDIT	編集
+REVIEW	確認
+EXIT	終了
+CAMP	キャンプ
+FIRE	火
+WATER	水
+AIR	風
+EARTH	土
+MENTAL	精神
+DIVINE	神聖
+MAGIC POINTS	魔力
+SPELL BOOK	呪文書
+OK	OK	状態表示
+POISONED	毒
+PARALYZED	麻痺
+ASLEEP	睡眠
+AFRAID	恐怖
+NAUSEATED	吐き気
+INSANE	狂気
+STONED	石化
+IRRADIATED	放射能
+DEAD	死亡
+ASHES	灰
+LOST	消失
+GOLD	金貨
+ITEM	アイテム
+CURSED	呪われた
+BONUS	ボーナス
+COSMIC FORGE	宇宙の鋳造所	作品名「Bane of the Cosmic Forge」の「Cosmic Forge」
