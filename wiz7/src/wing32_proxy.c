@@ -1333,6 +1333,170 @@ static void ui_install(void)
 }
 
 /* ------------------------------------------------------------------ */
+/* SCENARIO.GLD の名前 (品物・怪物・人物)                               */
+/*  名前は 16 バイトの欄に入っている。jpmod/scen_ja.txt の               */
+/*  「ファイル位置(16進)<TAB>訳」を、ファイルを読んだバッファのその位置に  */
+/*  書き込む (ReadFile / _lread / _hread を横取り)。元のファイルは変えない。*/
+/* ------------------------------------------------------------------ */
+typedef struct { DWORD off; char name[16]; } ScenPatch;
+static ScenPatch *g_scen;
+static int g_nscen;
+static HANDLE g_scen_h[8];          /* SCENARIO.GLD を開いたハンドル */
+
+static int scen_cmp(const void *a, const void *b)
+{
+    DWORD x = ((const ScenPatch *)a)->off, y = ((const ScenPatch *)b)->off;
+    return x < y ? -1 : x > y;
+}
+
+static void load_scen_names(void)
+{
+    char path[MAX_PATH], line[512];
+    FILE *f;
+    int cap = 0;
+    _snprintf(path, MAX_PATH, "%sscen_ja.txt", g_dir);
+    f = fopen(path, "rb");
+    if (!f) return;
+    while (fgets(line, sizeof line, f)) {
+        char *t, *e = line + strlen(line), enc[64];
+        int n;
+        while (e > line && (e[-1] == '\n' || e[-1] == '\r')) *--e = 0;
+        if (!line[0] || line[0] == '#' || !(t = strchr(line, '\t'))) continue;
+        *t++ = 0;
+        n = encode_line(t, enc, sizeof enc);
+        if (n <= 0 || n >= 16) continue;      /* 欄は 16 バイト (NUL 込み) */
+        if (g_nscen == cap) {
+            cap = cap ? cap * 2 : 512;
+            g_scen = (ScenPatch *)realloc(g_scen, cap * sizeof(ScenPatch));
+        }
+        g_scen[g_nscen].off = strtoul(line, NULL, 16);
+        memcpy(g_scen[g_nscen].name, enc, n);
+        g_scen[g_nscen].name[n] = 0;
+        g_nscen++;
+    }
+    fclose(f);
+    qsort(g_scen, g_nscen, sizeof(ScenPatch), scen_cmp);
+    logf("scenario names: %d", g_nscen);
+}
+
+static int is_scen_handle(HANDLE h)
+{
+    int i;
+    if (!h || h == INVALID_HANDLE_VALUE) return 0;
+    for (i = 0; i < 8; i++) if (g_scen_h[i] == h) return 1;
+    return 0;
+}
+
+static void remember_scen_handle(const char *name, HANDLE h)
+{
+    const char *b;
+    int i;
+    if (!name || !h || h == INVALID_HANDLE_VALUE || !g_nscen) return;
+    b = strrchr(name, '\\');
+    b = b ? b + 1 : name;
+    if (_stricmp(b, "SCENARIO.GLD")) {
+        for (i = 0; i < 8; i++) if (g_scen_h[i] == h) g_scen_h[i] = NULL;   /* 使い回されたハンドル */
+        return;
+    }
+    for (i = 0; i < 8; i++) if (!g_scen_h[i] || g_scen_h[i] == h) { g_scen_h[i] = h; break; }
+    if (g_debug >= 2) logf("SCENARIO.GLD opened (%p)", h);
+}
+
+/* ファイル位置 pos から n バイト読んだ buf に、名前の訳を書き込む */
+static void scen_patch(DWORD pos, unsigned char *buf, DWORD n)
+{
+    int lo = 0, hi = g_nscen;
+    if (!g_nscen || !n) return;
+    while (lo < hi) {               /* off >= pos の最初 */
+        int mid = (lo + hi) / 2;
+        if (g_scen[mid].off < pos) lo = mid + 1; else hi = mid;
+    }
+    for (; lo < g_nscen && g_scen[lo].off < pos + n; lo++) {
+        const char *s = g_scen[lo].name;
+        DWORD k, at = g_scen[lo].off - pos, len = (DWORD)strlen(s) + 1;
+        for (k = 0; k < len && at + k < n; k++) buf[at + k] = (unsigned char)s[k];
+    }
+}
+
+typedef HANDLE (WINAPI *CreateFileA_t)(LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE);
+typedef BOOL (WINAPI *ReadFile_t)(HANDLE, LPVOID, DWORD, LPDWORD, LPOVERLAPPED);
+typedef HFILE (WINAPI *lopen_t)(LPCSTR, int);
+typedef HFILE (WINAPI *OpenFile_t)(LPCSTR, LPOFSTRUCT, UINT);
+typedef UINT (WINAPI *lread_t)(HFILE, LPVOID, UINT);
+typedef long (WINAPI *hread_t)(HFILE, LPVOID, long);
+static CreateFileA_t real_CreateFileA;
+static ReadFile_t real_ReadFile;
+static lopen_t real_lopen;
+static OpenFile_t real_OpenFile;
+static lread_t real_lread;
+static hread_t real_hread;
+
+static HANDLE WINAPI hk_CreateFileA(LPCSTR name, DWORD acc, DWORD share, LPSECURITY_ATTRIBUTES sa, DWORD disp, DWORD fl, HANDLE tmpl)
+{
+    HANDLE h = real_CreateFileA(name, acc, share, sa, disp, fl, tmpl);
+    remember_scen_handle(name, h);
+    return h;
+}
+
+static HFILE WINAPI hk_lopen(LPCSTR name, int mode)
+{
+    HFILE h = real_lopen(name, mode);
+    if (h != HFILE_ERROR) remember_scen_handle(name, (HANDLE)(DWORD_PTR)h);
+    return h;
+}
+
+static HFILE WINAPI hk_OpenFile(LPCSTR name, LPOFSTRUCT of, UINT style)
+{
+    HFILE h = real_OpenFile(name, of, style);
+    if (h != HFILE_ERROR) remember_scen_handle(name, (HANDLE)(DWORD_PTR)h);
+    return h;
+}
+
+static BOOL WINAPI hk_ReadFile(HANDLE h, LPVOID buf, DWORD n, LPDWORD got, LPOVERLAPPED ov)
+{
+    DWORD pos = 0, done = 0;
+    BOOL r;
+    int scen = is_scen_handle(h) && !ov;
+    if (scen) pos = SetFilePointer(h, 0, NULL, FILE_CURRENT);
+    r = real_ReadFile(h, buf, n, got ? got : &done, ov);
+    if (r && scen && pos != INVALID_SET_FILE_POINTER) scen_patch(pos, (unsigned char *)buf, got ? *got : done);
+    return r;
+}
+
+static UINT WINAPI hk_lread(HFILE h, LPVOID buf, UINT n)
+{
+    LONG pos = is_scen_handle((HANDLE)(DWORD_PTR)h) ? _llseek(h, 0, FILE_CURRENT) : -1;
+    UINT r = real_lread(h, buf, n);
+    if (pos >= 0 && r != HFILE_ERROR) scen_patch((DWORD)pos, (unsigned char *)buf, r);
+    return r;
+}
+
+static long WINAPI hk_hread(HFILE h, LPVOID buf, long n)
+{
+    LONG pos = is_scen_handle((HANDLE)(DWORD_PTR)h) ? _llseek(h, 0, FILE_CURRENT) : -1;
+    long r = real_hread(h, buf, n);
+    if (pos >= 0 && r > 0) scen_patch((DWORD)pos, (unsigned char *)buf, (DWORD)r);
+    return r;
+}
+
+static void scen_install(void)
+{
+    if (!g_nscen) return;
+    real_CreateFileA = (CreateFileA_t)patch_iat("KERNEL32.dll", "CreateFileA", hk_CreateFileA);
+    real_ReadFile = (ReadFile_t)patch_iat("KERNEL32.dll", "ReadFile", hk_ReadFile);
+    real_lopen = (lopen_t)patch_iat("KERNEL32.dll", "_lopen", hk_lopen);
+    real_OpenFile = (OpenFile_t)patch_iat("KERNEL32.dll", "OpenFile", hk_OpenFile);
+    real_lread = (lread_t)patch_iat("KERNEL32.dll", "_lread", hk_lread);
+    real_hread = (hread_t)patch_iat("KERNEL32.dll", "_hread", hk_hread);
+    if (!real_CreateFileA) real_CreateFileA = CreateFileA;
+    if (!real_ReadFile) real_ReadFile = ReadFile;
+    if (!real_lopen) real_lopen = _lopen;
+    if (!real_OpenFile) real_OpenFile = OpenFile;
+    if (!real_lread) real_lread = _lread;
+    if (!real_hread) real_hread = _hread;
+}
+
+/* ------------------------------------------------------------------ */
 /* パッチ                                                               */
 /* ------------------------------------------------------------------ */
 #include "strlen_sites.h"
@@ -1406,6 +1570,7 @@ static BOOL install_hooks(void)
         logf("strlen sites patched: %d/%d", ok, n);
     }
     ui_install();
+    scen_install();
     logf("hooks installed (delta=%08lx)", g_delta);
     return TRUE;
 }
@@ -1553,6 +1718,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
         g_delta = (DWORD)GetModuleHandleA(NULL) - EXE_BASE;
         g_wc2code = (unsigned short *)calloc(0x10000, sizeof(unsigned short));
         load_translations();
+        load_scen_names();      /* 名前の訳もグリフ表に入れるため、BDF を読む前に */
         glyph_init();
         {
             int i;
