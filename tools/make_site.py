@@ -29,7 +29,7 @@ SHOTS = [
     ('spell.png', '呪文', '呪文の画面'),
 ]
 
-RELEASE7 = REPO + '/releases/tag/wiz7-v1.0'
+RELEASE7 = REPO + '/releases/tag/wiz7-v1.0.1'
 ZIP7 = 'Wizardry7_JP.zip'
 SHOTS7 = [
     ('menu.png', '起動時のメニュー', 'ウィザードリィ7 日本語版の起動時のメニューの画面'),
@@ -235,7 +235,7 @@ def wiz7_page(shots):
 <p class="sub">Wizardry 7: Crusaders of the Dark Savant（Wizardry Gold 版）</p>
 <h1>ウィザードリィ7 日本語化パッチ</h1>
 <p class="tag">Steam 版の「Wizardry 7: Crusaders of the Dark Savant」に付属する Wizardry Gold（Windows 版）を、日本語で遊べるようにする非公式のファンメイドパッチです。
-物語や住人たちとの会話、メニュー、キャラクターの作成と能力の画面、戦闘の文言、呪文・職業・種族・称号の名前、起動時のメニューまで日本語にしています。
+物語や住人たちとの会話、メニュー、キャラクターの作成と能力の画面、戦闘の文言、品物・怪物・人物・呪文・職業・種族・称号の名前、起動時のメニューまで日本語にしています。
 ゲームのフォルダにファイルを上書きで置くだけで日本語になります。</p>
 <p><a class="dl" href="%(release)s">ダウンロード（GitHub）</a></p>
 </section>
@@ -269,7 +269,7 @@ Steam の「ゲームファイルの整合性を確認」では、追加した�
 台詞の中のキーワードには「ニューシティ(NEW CITY)」のように英語を添えています。</li>
 <li>キャラクターの名前は英字で入力します。</li>
 <li>ゲーム画面は高さ 1080 ドットまで拡大して表示します。大きさは <code>jpmod</code> フォルダの <code>jpmod.ini</code> で変えられます。起動時のメニューなど Windows の画面は拡大されません。</li>
-<li>画像として描かれている文字（EXIT など）、アイテム・怪物の名前は英語のままです。</li>
+<li>画像として描かれている文字（EXIT など）は英語のままです。</li>
 <li>文章は機械翻訳をもとにしています。不自然な訳や誤訳があるかもしれません。全場面の確認は終わっていません。</li>
 <li>Windows 11 の Steam 版（Wizardry Gold 1.1b）で動作を確認しています。ほかの版では動きません。</li>
 </ul>
