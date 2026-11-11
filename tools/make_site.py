@@ -13,7 +13,7 @@ SITE = os.path.join(ROOT, 'site')
 
 BASE = 'https://higesho.github.io/wiz-ja/'
 REPO = 'https://github.com/higesho/wiz-ja'
-RELEASE = REPO + '/releases/tag/wiz6-v1.0'
+RELEASE = REPO + '/releases/tag/wiz6-v1.1'
 ZIP = 'Wizardry6_JP.zip'
 
 # 画面の写真（ファイル名, 見出し, alt）— 撮れたものから置いていく

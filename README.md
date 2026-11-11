@@ -3,7 +3,7 @@
 ウィザードリィ（Wizardry）シリーズを日本語で遊べるようにする、非公式のファンメイド日本語化プロジェクトです。
 
 - 紹介ページ: https://higesho.github.io/wiz-ja/
-- 第6作「Wizardry 6: Bane of the Cosmic Forge」の日本語化パッチ: [ダウンロード](https://github.com/higesho/wiz-ja/releases/tag/wiz6-v1.0)
+- 第6作「Wizardry 6: Bane of the Cosmic Forge」の日本語化パッチ: [ダウンロード](https://github.com/higesho/wiz-ja/releases/tag/wiz6-v1.1)
 - 第7作「Wizardry 7: Crusaders of the Dark Savant」（Wizardry Gold 版）の日本語化パッチ: [ダウンロード](https://github.com/higesho/wiz-ja/releases/tag/wiz7-v1.0)
 
 ゲームのフォルダに、ファイルを上書きで置くだけで日本語になります。使い方は、ダウンロードした zip の中の `説明書.txt` を見てください。
