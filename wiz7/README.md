@@ -105,7 +105,8 @@ Steam 版『Wizardry 7: Crusaders of the Dark Savant』の **Gold Edition (Windo
 - 訳は `translation/scen_names_ja.tsv` (原文→訳)。Wiz6 日本語化の `scen_ja.txt` と同じ原文はその訳 (ダガー・鋼の兜 など)、
   残りは同じ流儀で Haiku が訳した。`scen_names.py build` が `translation/scen_ja.txt` (ファイル位置→訳) を作り、DLL が読む。
 - DLL は CreateFileA/_lopen/OpenFile で SCENARIO.GLD のハンドルを覚え、ReadFile/_lread/_hread で読んだバッファの
-  該当位置に訳を書き込む (元のファイルは変えない)。
+  該当位置が「原文+NUL」と一致したときだけ訳に置き換える (元のファイルは変えない)。版が違ってデータの並びがずれても、
+  別のデータを壊さず英語のまま残る (一致しなかった所は jpmod.log に「scenario name mismatch」と出る)。
 - 長さ: 欄は 15 バイト + NUL (全角 7 字)。品物の名前は "/" で 2 行に分けて描かれ、1 行 10 バイト (全角 5 字) まで
   (超えると切れる)。`scen_names.py import` / `build` が検査する。
 - 品物 368・怪物 373・人物 69 種、計 1,389 欄を訳した。持ち物の画面で表示を確認済み。
