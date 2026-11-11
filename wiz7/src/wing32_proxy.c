@@ -1335,12 +1335,15 @@ static void ui_install(void)
 /* ------------------------------------------------------------------ */
 /* SCENARIO.GLD の名前 (品物・怪物・人物)                               */
 /*  名前は 16 バイトの欄に入っている。jpmod/scen_ja.txt の               */
-/*  「ファイル位置(16進)<TAB>訳」を、ファイルを読んだバッファのその位置に  */
-/*  書き込む (ReadFile / _lread / _hread を横取り)。元のファイルは変えない。*/
+/*  「ファイル位置(16進)<TAB>原文<TAB>訳」に従い、ファイルを読んだバッファの*/
+/*  その位置が「原文+NUL」と一致したときだけ訳に置き換える                */
+/*  (ReadFile / _lread / _hread を横取り)。版が違ってデータの並びがずれて  */
+/*  いても、別のデータを壊さない。元のファイルは変えない。                 */
 /* ------------------------------------------------------------------ */
-typedef struct { DWORD off; char name[16]; } ScenPatch;
+typedef struct { DWORD off; char en[16]; char name[16]; } ScenPatch;
 static ScenPatch *g_scen;
 static int g_nscen;
+static int g_scen_hit, g_scen_miss;
 static HANDLE g_scen_h[8];          /* SCENARIO.GLD を開いたハンドル */
 
 static int scen_cmp(const void *a, const void *b)
@@ -1358,18 +1361,21 @@ static void load_scen_names(void)
     f = fopen(path, "rb");
     if (!f) return;
     while (fgets(line, sizeof line, f)) {
-        char *t, *e = line + strlen(line), enc[64];
+        char *en, *ja, *e = line + strlen(line), enc[64];
         int n;
         while (e > line && (e[-1] == '\n' || e[-1] == '\r')) *--e = 0;
-        if (!line[0] || line[0] == '#' || !(t = strchr(line, '\t'))) continue;
-        *t++ = 0;
-        n = encode_line(t, enc, sizeof enc);
-        if (n <= 0 || n >= 16) continue;      /* 欄は 16 バイト (NUL 込み) */
+        if (!line[0] || line[0] == '#' || !(en = strchr(line, '\t'))) continue;
+        *en++ = 0;
+        if (!(ja = strchr(en, '\t'))) continue;
+        *ja++ = 0;
+        n = encode_line(ja, enc, sizeof enc);
+        if (n <= 0 || n >= 16 || strlen(en) >= 16) continue;   /* 欄は 16 バイト (NUL 込み) */
         if (g_nscen == cap) {
             cap = cap ? cap * 2 : 512;
             g_scen = (ScenPatch *)realloc(g_scen, cap * sizeof(ScenPatch));
         }
         g_scen[g_nscen].off = strtoul(line, NULL, 16);
+        strcpy(g_scen[g_nscen].en, en);
         memcpy(g_scen[g_nscen].name, enc, n);
         g_scen[g_nscen].name[n] = 0;
         g_nscen++;
@@ -1405,17 +1411,28 @@ static void remember_scen_handle(const char *name, HANDLE h)
 /* ファイル位置 pos から n バイト読んだ buf に、名前の訳を書き込む */
 static void scen_patch(DWORD pos, unsigned char *buf, DWORD n)
 {
-    int lo = 0, hi = g_nscen;
+    int lo = 0, hi = g_nscen, hit0 = g_scen_hit;
     if (!g_nscen || !n) return;
     while (lo < hi) {               /* off >= pos の最初 */
         int mid = (lo + hi) / 2;
         if (g_scen[mid].off < pos) lo = mid + 1; else hi = mid;
     }
     for (; lo < g_nscen && g_scen[lo].off < pos + n; lo++) {
-        const char *s = g_scen[lo].name;
-        DWORD k, at = g_scen[lo].off - pos, len = (DWORD)strlen(s) + 1;
-        for (k = 0; k < len && at + k < n; k++) buf[at + k] = (unsigned char)s[k];
+        const ScenPatch *p = &g_scen[lo];
+        DWORD at = p->off - pos, elen = (DWORD)strlen(p->en) + 1;
+        /* 原文 (NUL まで) が丸ごと読み込まれていて、中身が一致するときだけ置き換える */
+        if (at + elen > n || memcmp(buf + at, p->en, elen)) {
+            if (at + elen <= n && g_scen_miss++ < 5)
+                logf("scenario name mismatch at %06lx (expected \"%s\"): not replaced", p->off, p->en);
+            continue;
+        }
+        if (at + strlen(p->name) + 1 > n) continue;           /* 読み込んだ範囲を越えるなら書かない */
+        memcpy(buf + at, p->name, strlen(p->name) + 1);   /* 訳は 15 バイト以内なので欄に収まる */
+        g_scen_hit++;
     }
+    if (g_debug >= 2 && g_scen_hit > hit0)
+        logf("scenario read %06lx+%lu: %d names replaced (total %d, mismatch %d)",
+             pos, n, g_scen_hit - hit0, g_scen_hit, g_scen_miss);
 }
 
 typedef HANDLE (WINAPI *CreateFileA_t)(LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE);
