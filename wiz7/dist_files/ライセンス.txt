@@ -1,0 +1,12 @@
+このパッチで使っているもの
+==========================
+
+■ 東雲フォント（Shinonome Font）
+  The Electronic Font Open Laboratory（パブリックドメイン）
+  http://openlab.ring.gr.jp/efont/shinonome/
+  shinonome-0.9.11p1 の shnmk12.bdf（12 ドット）と shnmk16.bdf（16 ドット）を、
+  wizardry7gold/jpmod/fonts/shinonome/ にそのまま収めています。元の LICENSE・AUTHORS・README も同じ場所にあります。
+
+■ このパッチ
+  wing32.dll（日本語の表示と画面の拡大を行うプログラム）と、日本語の訳文（jpmod/msg_ja.txt、jpmod/ui_ja.txt）を収めています。
+  wing32.dll はゲームが使う WinG の互換品で、ゲームのフォルダに置くと、ゲームが起動時に読み込みます。
