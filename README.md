@@ -4,6 +4,7 @@
 
 - 紹介ページ: https://higesho.github.io/wiz-ja/
 - 第6作「Wizardry 6: Bane of the Cosmic Forge」の日本語化パッチ: [ダウンロード](https://github.com/higesho/wiz-ja/releases/tag/wiz6-v1.0)
+- 第7作「Wizardry 7: Crusaders of the Dark Savant」（Wizardry Gold 版）の日本語化パッチ: [ダウンロード](https://github.com/higesho/wiz-ja/releases/tag/wiz7-v1.0)
 
 ゲームのフォルダに、ファイルを上書きで置くだけで日本語になります。使い方は、ダウンロードした zip の中の `説明書.txt` を見てください。
 誤訳や不自然な訳は [Issues](https://github.com/higesho/wiz-ja/issues) で教えてください。
@@ -50,8 +51,18 @@
 - `trans/glossary.tsv` … 用語集。`trans/GUIDE.md` … 訳すときのルール（長さの制限、表示のしくみ）。
 - 検査は `tools/check.py`（文字数、制御文字、右端のはみ出し、折り返し）です。
 
+## ウィザードリィ7（`wiz7/`）
+
+- Steam 版に付属の Wizardry Gold（Windows 版、`WIZARD.EXE` 1.1b）が対象です。
+- ゲームが読み込む WinG（`wing32.dll`）の互換品を作り、ゲームのフォルダに置きます。この DLL がメモリ上でゲームを書き換え、
+  日本語の文字を東雲フォントで描き、文章を訳文に差し替え、日本語の折り返しを行い、画面を拡大します。元のファイルは書き換えません。
+- ソースは `wiz7/src/`（C、MSVC でビルド）、ツールは `wiz7/tools/`、訳文は `wiz7/translation/ja/`、
+  詳しい仕組みと作業手順は `wiz7/README.md` にあります。英語の原文は入っていません（`tools/extract_msgs.py` で手元のゲームから取り出します）。
+- 用語（種族・職業・能力値・称号・技能・呪文）はウィザードリィ6 の訳とそろえています。
+
 ## ライセンスなど
 
 - 日本語の表示に美咲フォント（門真なむ氏、フリーソフトウェア）を使っています。詳しくは `dist_files/ライセンス.txt`。
+- ウィザードリィ7 では東雲フォント（パブリックドメイン）を使っています。詳しくは `wiz7/dist_files/ライセンス.txt`。
 - 非公式のファン翻訳です。開発元・販売元とは関係ありません。Wizardry は各権利者の商標または登録商標です。
   ゲームの画像・文章の権利は原作の権利者にあります。
