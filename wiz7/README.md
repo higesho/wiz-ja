@@ -95,7 +95,28 @@ Steam 版『Wizardry 7: Crusaders of the Dark Savant』の **Gold Edition (Windo
   会話ブロック (連続 ID) で原文にそのキーワードがあれば、訳文で最初に出る訳語の直後に 1 回だけ。
   1 字の訳語は熟語の一部 (王国の王) には付けない。16 字以下のキーワードは空白を `_` にする
   (ゲームは `_` を改行しない空白として描く)。DLL は `(…)` と直後の句読点を前の字と同じ単位にして折り返す。
-- 現状 1,999 か所。行数は英語の 0.88 倍、幅あふれ・禁則違反は 0。
+- 会話・物語 (ID 8000 以降) だけに添える (`keywords.py` の `MIN_ID`)。それより前は UI・職業名・称号などで、
+  v1.0 では誤って添えていた (盗賊(THIEF) など。v1.0.1 で修正)。現状 1,852 か所。
+
+### 品物・怪物・人物の名前 (SCENARIO.GLD)
+
+- 名前は SCENARIO.GLD の 16 バイトの欄 (NUL 終端)。品物はファイル位置 ≡ 32 (mod 72)、怪物は 16 バイト間隔で 4 欄
+  (単数・複数・未識別の単数・複数)、人物は ≡ 72 (mod 148)。`tools/scen_names.py extract` が `translation/scen_en.tsv` に取り出す。
+- 訳は `translation/scen_names_ja.tsv` (原文→訳)。Wiz6 日本語化の `scen_ja.txt` と同じ原文はその訳 (ダガー・鋼の兜 など)、
+  残りは同じ流儀で Haiku が訳した。`scen_names.py build` が `translation/scen_ja.txt` (ファイル位置→訳) を作り、DLL が読む。
+- DLL は CreateFileA/_lopen/OpenFile で SCENARIO.GLD のハンドルを覚え、ReadFile/_lread/_hread で読んだバッファの
+  該当位置に訳を書き込む (元のファイルは変えない)。
+- 長さ: 欄は 15 バイト + NUL (全角 7 字)。品物の名前は "/" で 2 行に分けて描かれ、1 行 10 バイト (全角 5 字) まで
+  (超えると切れる)。`scen_names.py import` / `build` が検査する。
+- 品物 368・怪物 373・人物 69 種、計 1,389 欄を訳した。持ち物の画面で表示を確認済み。
+
+### 改ページの端切れ・語中の制御記号
+
+- 1 行 15 字・4 行で改ページなので、段落が 60 字を少し超えると数文字だけのページ (「い……」) ができる。
+  `python tools/orphans.py` で一覧 (4 行のページのあふれで、1 行・8 字以下のもの)。`export N` で Haiku 用の作業ファイル、
+  `apply` で反映。2026-11-11 に 115 か所を訳文の短縮で 0 にした。
+- 制御記号 (@ ! & % ] ~) は語頭でしか効かないので、「……@次の文」のように全角の直後に続けると記号がそのまま出る。
+  `python tools/fix_ctrl_space.py` (`--fix`) が原文で語頭のものに空白を補う (全角どうしの空白は表示で詰まる)。39 か所を修正。
 
 ### 用語は Wizardry 6 日本語化と統一
 
@@ -169,6 +190,9 @@ python tools\make_release.py      :: release\Wizardry7_JP.zip
 - 配布用の設定は `dist_files/jpmod.ini` (ログなし `log=0`)。説明書・ライセンス表記も `dist_files/`。
 - 外すときは `wizardry7gold/wing32.dll` と `wizardry7gold/jpmod/` を消す (Steam の整合性確認では消えない)。
 - zip を展開しての起動を実機で確認済み (2026-11-11)。
+- 公開: https://github.com/higesho/wiz-ja/releases/tag/wiz7-v1.0 (v1.0, 2026-11-11)、紹介ページ https://higesho.github.io/wiz-ja/wiz7/ 。
+  サイトとリポジトリは Wizardry 6 のプロジェクト (`../Wizardry6/JPN_PATCH`) の `tools/make_site.py` `tools/make_repo.py` で作る。
+  手順は `../Wizardry6/JPN_PATCH/publish/公開手順.md`。
 
 ## 開発用機能 (`jpmod.ini` の `[debug] log=1` 以上)
 
@@ -181,7 +205,7 @@ python tools\make_release.py      :: release\Wizardry7_JP.zip
 ## 未対応 (今後)
 
 - MSG.GLD は翻訳対象 8,158 件を全訳済み (Haiku による初訳。要推敲)。会話キーワード等の約 900 件は英語のまま
-- SCENARIO.GLD 内の文字列 (アイテム・モンスター・呪文名など)
+- SCENARIO.GLD の名前は訳した。戦闘中の怪物名・店の品物一覧などの画面はまだ実機で見ていない
 - Windows 標準の画面: 起動時メニュー・メニューバーは実機で日本語表示を確認。設定・ファイルを開く・終了確認などは
   `ui_ja.txt` に訳を入れたが未確認。ファイル選択のコモンダイアログ等、表に無い文言は英語のまま
 - 画像に描かれた英字 (EXIT など)
