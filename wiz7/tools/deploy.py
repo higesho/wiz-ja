@@ -21,6 +21,7 @@ def deploy():
     shutil.copy2(MOD / "build" / "wing32.dll", GAME / "wing32.dll")
     shutil.copy2(MOD / "translation" / "msg_ja.txt", DEST / "msg_ja.txt")
     shutil.copy2(MOD / "translation" / "ui_ja.txt", DEST / "ui_ja.txt")
+    shutil.copy2(MOD / "translation" / "scen_ja.txt", DEST / "scen_ja.txt")
     shutil.copytree(MOD / "fonts", DEST / "fonts", dirs_exist_ok=True)
     ini = DEST / "jpmod.ini"
     if not ini.exists():

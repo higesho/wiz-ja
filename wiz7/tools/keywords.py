@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import batch  # noqa: E402
 
 KW_FILE = batch.TR / "keywords_ja.tsv"
+MIN_ID = 8000      # これより前の ID (UI・名前の表など) には書き添えない
 STOP = {"NO", "YES", "YEA", "YEP", "SURE", "OK", "YE", "MAYBE", "NOPE", "NAY", "YOU", "ALL", "US", "WE",
         "ME", "I", "IT", "THE", "AND", "OF", "TO", "A", "AN", "IS", "ARE"}
 
@@ -133,7 +134,10 @@ def annotate(ja, en, report=False):
     out = dict(ja)
     count = skipped = 0
     for blk in batch.blocks(en):
-        ids = [k for k in blk if k in out and not batch.is_keyword(en[k]) and not batch.skipped(k, en[k])]
+        # 会話・物語 (ID 8000 以降) だけに添える。それより前は UI・職業名・称号・噂の差し込み語などで、
+        # 欄の幅が決まっていたり文の部品だったりするので付けない
+        ids = [k for k in blk if k >= MIN_ID and k in out and not batch.is_keyword(en[k])
+               and not batch.skipped(k, en[k])]
         if not ids:
             continue
         en_text = " ".join(en[k] for k in blk)

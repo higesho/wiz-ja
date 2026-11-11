@@ -50,8 +50,8 @@ TEXT_TERMS = [
     ("SPEED", "素早さ", "速さ"),
     ("PERSONALITY", "個性", "魅力"),
     ("KARMA", "カルマ", "業"),
-    ("COSMIC FORGE", "コズミック・フォージ", "宇宙の鋳造所"),
-    ("COSMIC FORGE", "コズミックフォージ", "宇宙の鋳造所"),
+    ("COSMIC FORGE", "コズミック・フォージ", "魔筆"),
+    ("COSMIC FORGE", "コズミックフォージ", "魔筆"),
 ]
 
 

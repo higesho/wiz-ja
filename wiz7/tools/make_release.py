@@ -25,6 +25,7 @@ def main():
         (DOCS / "jpmod.ini", "wizardry7gold/jpmod/jpmod.ini"),
         (MOD / "translation" / "msg_ja.txt", "wizardry7gold/jpmod/msg_ja.txt"),
         (MOD / "translation" / "ui_ja.txt", "wizardry7gold/jpmod/ui_ja.txt"),
+        (MOD / "translation" / "scen_ja.txt", "wizardry7gold/jpmod/scen_ja.txt"),
         (DOCS / "説明書.txt", "説明書.txt"),
         (DOCS / "ライセンス.txt", "ライセンス.txt"),
     ]
