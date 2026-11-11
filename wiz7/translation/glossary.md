@@ -155,7 +155,7 @@ MAGE 魔術師 / PRIEST 僧侶 / ALCHEMIST 錬金術師 / PSIONIC 超能力者 (
 | 原文 | 訳語 |
 |---|---|
 | Astral Dominae | アストラル・ドミナエ |
-| Cosmic Forge | 宇宙の鋳造所 |
+| Cosmic Forge | 魔筆 (SFC 版ウィザードリィ6 の副題「禁断の魔筆」から) |
 | Guardia / Lost Guardia | ガーディア / 失われしガーディア |
 | Higardi / Higardia | ハイガーディ / ハイガーディア |
 | Black Ship | 黒い船 |
@@ -357,6 +357,14 @@ FIRE 火 / LIGHT 光 / COLD 冷気 / PARALYSIS 麻痺 / AIR 風 / POISON 毒 / M
 HYPNOSIS 催眠 / PSIONIC 超能力 / LIFEFORCE 生命力 / MAGIC 魔法 / DEATH 死
 状態: POISONED 毒 / DISEASED 病気 / PARALYZED 麻痺 / STONED 石化 / ASLEEP 睡眠 / AFRAID 恐怖 /
 NAUSEOUS 吐き気 / BLINDED 盲目 / SILENCED 沈黙 / INSANE 狂気 / IRRITATED かゆみ / DEAD 死亡 / ASHES 灰
+
+## 8b. 品物・怪物・人物の名前 (SCENARIO.GLD)
+
+- 訳は `translation/scen_names_ja.tsv`。Wizardry 6 日本語化の名前 (`../Wizardry6/JPN_PATCH/trans/scen_ja.txt`) の流儀にそろえる:
+  よく知られた武器はカタカナ (ダガー、ロングソード)、日本の武器は漢字 (脇差、薙刀)、防具や魔法の品は「〜の…」 (鋼の兜、銀の篭手、竜殺し)。
+- 長さ: 全角 7 字まで。品物は 1 行全角 5 字までで、長いときは "/" で 2 行に分ける (ショート/ボウ、髭付きの/戦斧)。
+- 呪文の名を持つ品物 (巻物・薬) は Wiz6 に訳があればそれ (テラー、解毒薬)、無ければ呪文名 (減速、幻影)。
+- 本文で品物に触れるときも、なるべく同じ名前を使う。
 
 ## 9. よく出る言い回し
 
