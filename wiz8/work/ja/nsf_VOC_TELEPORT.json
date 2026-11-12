@@ -1,0 +1,6 @@
+{
+ "NPC SCRIPTS/VOC_TELEPORT.NSF@1b": "I.U.F. テレポート・アクセス・ゲート。EWAXXユニットにセキュリティ認証を提示してください。",
+ "NPC SCRIPTS/VOC_TELEPORT.NSF@d4": "I.U.F. テレポート・アクセス・ゲート。EWAXXユニットにセキュリティ認証を提示してください。",
+ "NPC SCRIPTS/VOC_TELEPORT.NSF@241": "アクセス拒否。アクセスにはレベル4のセキュリティパスが必要です。",
+ "NPC SCRIPTS/VOC_TELEPORT.NSF@794": "アクセス承認。"
+}

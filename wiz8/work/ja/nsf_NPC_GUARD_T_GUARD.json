@@ -1,0 +1,17 @@
+{
+ "NPC SCRIPTS/NPC_GUARD_T_GUARD.NSF@d5": "ここは立入制限区域ススだ!",
+ "NPC SCRIPTS/NPC_GUARD_T_GUARD.NSF@11c": "この区域から、直ちに立ち去れ!",
+ "NPC SCRIPTS/NPC_GUARD_T_GUARD.NSF@161": "トラン帝国の命により、下がっておれ!",
+ "NPC SCRIPTS/NPC_GUARD_T_GUARD.NSF@1c2": "お前は不法侵入ササしておるぞ!",
+ "NPC SCRIPTS/NPC_GUARD_T_GUARD.NSF@235": "監視者ササの言ったとおりだ! 貴様らはわが砦スに踏み込んだな!",
+ "NPC SCRIPTS/NPC_GUARD_T_GUARD.NSF@2f2": "ここへ入る許可はないぞ! よくも帝国に挑んでくれたな!",
+ "NPC SCRIPTS/NPC_GUARD_T_GUARD.NSF@3cb": "お前たちの戦いを、私が代わりに戦ってやる義理はない!",
+ "NPC SCRIPTS/NPC_GUARD_T_GUARD.NSF@43c": "こちらは隊長ススだ。ドミナスにある我らの前線キャンプが確認した。サヴァントが惑星を周回しておるとな。全ドローン、着陸準備! 全保安部隊、戦闘配置につけ!",
+ "NPC SCRIPTS/NPC_GUARD_T_GUARD.NSF@60f": "さて、肉の者どもよ、生き延びたか。お前たちの言い草を借りれば、私も喜ばしく思うぞ。ガーディアでは、お前たちはトラン帝国に大いに役立ってくれたな。 ",
+ "NPC SCRIPTS/NPC_GUARD_T_GUARD.NSF@705": "見てのとおり、我らはしばらく前からドミナスに偵察隊を置いている。この打ち捨てられた施設を前線キャンプとして使っておるのだ。サヴァントの向かった先がわかるや否や、船を先行させたのだ。",
+ "NPC SCRIPTS/NPC_GUARD_T_GUARD.NSF@8b5": "立ち去りたければ去ってよい。我らへの義務は終わりだ。だが、サヴァントへの復讐を望むなら、我らに加わるがよい。我らはサヴァントの計画を掴んだ。まもなく奴に仕掛けるつもりだ。",
+ "NPC SCRIPTS/NPC_GUARD_T_GUARD.NSF@a5b": "再び我らに仕えたいならば、大いに歓迎するぞ。新たな指導者ザントは、お前と面識ササを得られることを楽しみにしておる。お前の話は色々と耳にしているそうだ……",
+ "_notes": [
+  "flesh-things は用語表どおり「肉の者ども」。Watchers は「監視者」。Guardia は「ガーディア」。"
+ ]
+}

@@ -1,0 +1,15 @@
+{
+ "NPC SCRIPTS/VOC_BLACKBOX.NSF@1b": "フライトレコーダー解析ステーション。システム4.12。データレコーダーをスロットに挿入してください。",
+ "NPC SCRIPTS/VOC_BLACKBOX.NSF@c6": "フライトレコーダー解析ステーション。システム4.12。データレコーダーをスロットに挿入してください。",
+ "NPC SCRIPTS/VOC_BLACKBOX.NSF@171": "*ウィーン* *ツッ!* ズプ-ズプ-ズプ…… フライトレコーダーが損傷しており、読み取れません。データは回収されませんでした。",
+ "NPC SCRIPTS/VOC_BLACKBOX.NSF@268": "読み取り装置を作動中……",
+ "NPC SCRIPTS/VOC_BLACKBOX.NSF@2cf": "通信: HLL Guardia I\n 追跡: 011:34 2X:2Y:30Z ドミナス\n イベント: エンジン故障 . . .\n 交戦目標: 黒い船、DAEDALUS",
+ "NPC SCRIPTS/VOC_BLACKBOX.NSF@3c5": "\n 目標座標: 1X:1Y:2Z\n イベント: システム危機 . . .\n イベント: 衝撃に備えよ - 衝撃に備えよ - 衝撃に備えよ\n イベント: 衝突――衝突――衝突\n \n  ><  軌道トラッカーで取得せよ  ><\n  ><     軌道座標     ><",
+ "NPC SCRIPTS/VOC_BLACKBOX.NSF@5a2": "記録終了",
+ "NPC SCRIPTS/VOC_BLACKBOX.NSF@6a4": "エラー。未確認の物体です。ブラックボックスを挿入してください。",
+ "_notes": [
+  "HLL Guardia I / DAEDALUS は英字の固有名・コードとしてそのまま残した。Guardia は用語表どおり ガーディア",
+  "用語表にない Black Box は「ブラックボックス」と音訳した",
+  "3c5 の ><  ><  の枠は原文の表示幅に合わせて整えた"
+ ]
+}

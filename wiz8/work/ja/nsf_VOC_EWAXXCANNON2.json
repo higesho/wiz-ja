@@ -1,0 +1,10 @@
+{
+ "NPC SCRIPTS/VOC_EWAXXCANNON2.NSF@d5": "目標: 黒い船\n 位置: 破壊済み\n 状態: 破壊\n 命中確率: NA\n ダメージ確率: NA\n",
+ "NPC SCRIPTS/VOC_EWAXXCANNON2.NSF@1f6": "目標:  黒い船\n 位置: 不明\n 状態: 発信源で追跡妨害\n 命中確率: 0%\n ダメージ確率: 0%\n",
+ "NPC SCRIPTS/VOC_EWAXXCANNON2.NSF@372": "軌道座標を受信。\n 追跡中……\n 目標をロックオン。\n 発射シーケンスを開始。\n",
+ "NPC SCRIPTS/VOC_EWAXXCANNON2.NSF@420": "……3\n ……2\n ……1\n ……発射",
+ "NPC SCRIPTS/VOC_EWAXXCANNON2.NSF@4d8": "目標 - 黒い船 - 破壊。確認済み。",
+ "_notes": [
+  "BLACK SHIP は用語表どおり「黒き船」。NA は英字のまま残した"
+ ]
+}

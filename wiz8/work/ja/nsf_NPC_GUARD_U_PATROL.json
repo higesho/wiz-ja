@@ -1,0 +1,21 @@
+{
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@d5": "閣下。どうぞお進みください。",
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@148": "閣下! 報告すべきことはありません!",
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@1c5": "こんにちは、兵士諸君。この区域への立ち入りを許可する。どうぞお進みください。",
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@292": "兵士諸君、目的地へ向けてお進みください。",
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@331": "やあ、兵士諸君。",
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@396": "命令は受けているだろう、兵士。それに従っているのが一番だ。",
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@443": "戦争をここに持ち込んだのか?!!",
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@49c": "じっとしていろ、お前の頭を叩き割ってやるからな!",
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@535": "IUFにちょっかいを出すとどうなるか、思い知らせてやる!",
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@5c8": "ママを呼んでおいたほうがいいぞ、ひよっこめ!",
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@723": "罠だ! 罠だ! 着陸中止! ああ、なんてことだ……",
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@828": "あの虫を殺せ!!!",
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@869": "なんと……どうしてこんなことに? ああ、まったく。将軍にお知らせします、閣下。",
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@979": "管制塔、こちらはエモンズ大尉だ。ここでは指示はない。軌道へ戻る。",
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@a8c": "管制塔、こちらはエモンズ大尉、再度だ。もうしばらく上にいる。以上。",
+ "NPC SCRIPTS/NPC_GUARD_U_PATROL.NSF@b7b": "こちらは船長だ。ドミナスのキャンプから確認が取れた。サヴァントの船が惑星の軌道上にある。全乗員、着陸手順を開始せよ。防衛システム、赤色警戒!",
+ "_notes": [
+  "Capt. Emmons は「エモンズ大尉」と音訳(用語表になし)。"
+ ]
+}

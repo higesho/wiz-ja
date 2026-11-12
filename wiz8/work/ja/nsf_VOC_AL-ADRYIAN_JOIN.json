@@ -1,0 +1,13 @@
+{
+ "NPC SCRIPTS/VOC_AL-ADRYIAN_JOIN.NSF@1b": "ようこそ、同胞のテンプラーよ。祝福しよう! そなたは今や我らの一員、テンプラーのラパックスである。すべての扉はそなたに開かれ、我らのものはそなたのものでもある。この契約は封じられた。",
+ "NPC SCRIPTS/VOC_AL-ADRYIAN_JOIN.NSF@19a": "テンプラーよ、ここでそなたのなすべきことはもうない。",
+ "NPC SCRIPTS/VOC_AL-ADRYIAN_JOIN.NSF@267": "ここは争いの場ではない。直ちに戦いをやめよ!",
+ "NPC SCRIPTS/VOC_AL-ADRYIAN_JOIN.NSF@386": "何様のつもりだ!?",
+ "NPC SCRIPTS/VOC_AL-ADRYIAN_JOIN.NSF@3d7": "聞くべきであったな、テンプラーよ!",
+ "NPC SCRIPTS/VOC_AL-ADRYIAN_JOIN.NSF@8b0": "心得るべき三つのことがある。一つ、同じラパックスに牙をむくな。我らを裏切れば、滅ぼされるぞ。二つ目か? そなたは今や我らのもの……アル＝セデクサス様のものだと忘れぬことだ。必要なときはいつでも、ラパックスの裂け目の中に彼女を見出せる。 ",
+ "NPC SCRIPTS/VOC_AL-ADRYIAN_JOIN.NSF@a7e": "テンプラーよ、彼女の城壁の内にとどまれ。さすれば、害は及ばぬ。もはや言うまでもあるまい……",
+ "_notes": [
+  "用語表の Templar は「テンプラー」とした",
+  "原文 8b0 の末尾の空白は原文どおり残した"
+ ]
+}

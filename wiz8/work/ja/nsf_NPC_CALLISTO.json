@@ -1,0 +1,24 @@
+{
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@1b": "挨拶します。こちらはムーク船カリスト。セキュリティ緊急事態が発令中です。本船への干渉はしないでください。さもなくば防衛手順の起動を余儀なくされます。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@184": "こちらはムーク船カリスト。驚かないでください。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@2b5": "こちらはムーク船カリスト。驚かないでください。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@4cb": "その件は懸念事項ではありません。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@51a": "その問題は本船の防衛とは関係ありません。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@5fa": "意味が通じません。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@643": "無意味な発言です。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@e5f": "ムークは平和的探査任務のため来訪しています。驚かないでください。干渉しないでください。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@1124": "ダークサヴァントと呼ばれる存在は、都市に大規模な部隊を配置し、惑星軌道上に強力な恒星船――黒い船――を展開しています。この存在への対応には極度の注意を要します。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@19b6": "私はカリスト・ムーク船です。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@1c7f": "挨拶します。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@1cfc": "ユーザーインターフェースを終了します。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@1e80": "最大効率で稼働中です。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@2010": "黒い船は全宇宙に知られています。船が領域内にいることが判明している場合は、極度の注意を要します。注意: 本船は領域内に存在することが確認されています。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@23ce": "その答えは持ち合わせていません。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@2465": "ダークサヴァントに属する敵対勢力が付近にいます。よって本船はセキュリティ警戒態勢に置かれています。本船への立ち入りは絶対に禁止です。本船への干渉は死亡または不慮の四肢切断を招きます。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@268f": "本船は自衛のため最大出力を使用する準備ができています。ご自身の安全のため、どうか離れてください。本当です。本気で言っています。",
+ "NPC SCRIPTS/NPC_CALLISTO.NSF@280e": "こちらはムーク船カリストです。",
+ "_notes": [
+  "Mook vessel → ムーク船 (用語表は Mook のみ)",
+  "Black Ship → 黒き船 (用語表どおり)"
+ ]
+}

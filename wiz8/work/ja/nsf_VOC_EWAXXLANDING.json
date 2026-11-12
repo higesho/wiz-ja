@@ -1,0 +1,16 @@
+{
+ "NPC SCRIPTS/VOC_EWAXXLANDING.NSF@1b": "管理コードを入力:",
+ "NPC SCRIPTS/VOC_EWAXXLANDING.NSF@a0": "管理コードを入力:",
+ "NPC SCRIPTS/VOC_EWAXXLANDING.NSF@450": "何だ?",
+ "NPC SCRIPTS/VOC_EWAXXLANDING.NSF@469": "えっ?",
+ "NPC SCRIPTS/VOC_EWAXXLANDING.NSF@179e": "EWAXXユニットに保安許可を提示してください。",
+ "NPC SCRIPTS/VOC_EWAXXLANDING.NSF@1c14": "管理コードを入力:",
+ "NPC SCRIPTS/VOC_EWAXXLANDING.NSF@1c49": "管理コードを入力:",
+ "NPC SCRIPTS/VOC_EWAXXLANDING.NSF@1c7e": "管理コードを入力:",
+ "NPC SCRIPTS/VOC_EWAXXLANDING.NSF@1e38": "管制が着陸シーケンスを起動……",
+ "NPC SCRIPTS/VOC_EWAXXLANDING.NSF@1ee7": "コードが認識されません。",
+ "NPC SCRIPTS/VOC_EWAXXLANDING.NSF@1f54": "着陸シーケンスを開始……",
+ "_notes": [
+  "450 と 469 は端末に対する独り言のため、「何だ?」「えっ?」とした"
+ ]
+}

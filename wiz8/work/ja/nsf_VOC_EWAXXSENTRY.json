@@ -1,0 +1,16 @@
+{
+ "NPC SCRIPTS/VOC_EWAXXSENTRY.NSF@1b": "EWAXX バージョン4.2 無線システム。立入制限区域へのアクセスには、EWAXXユニットに保安許可を提示してください。",
+ "NPC SCRIPTS/VOC_EWAXXSENTRY.NSF@116": "EWAXXユニットに保安許可を提示してください。",
+ "NPC SCRIPTS/VOC_EWAXXSENTRY.NSF@239": "エラー。ウンパニ帝国連邦の保安許可カードが必要です。",
+ "NPC SCRIPTS/VOC_EWAXXSENTRY.NSF@796": "保安許可を確認中……アクセス拒否。保安レベル3が必要です。",
+ "NPC SCRIPTS/VOC_EWAXXSENTRY.NSF@86f": "保安許可を確認中……アクセス承認。訓練部門にあなたの到着を通知しました。",
+ "NPC SCRIPTS/VOC_EWAXXSENTRY.NSF@94a": "保安許可を確認中……アクセス拒否。人事記録によれば、現在の任務は「外交/アルニカ」です。ギガス山への立ち入りは不要です。",
+ "NPC SCRIPTS/VOC_EWAXXSENTRY.NSF@aa9": "保安許可を確認。アクセス承認。ヤミール将軍の執務室へ直接向かってください。あなたの到着は保安部に通知します。保安部へ通知済み。ヤミールへ通知済み。",
+ "NPC SCRIPTS/VOC_EWAXXSENTRY.NSF@c28": "保安許可を確認。アクセス承認。",
+ "NPC SCRIPTS/VOC_EWAXXSENTRY.NSF@cb9": "保安許可を確認。飛行甲板へのアクセスを許可。追加の保安要員を要請。保安部へ通知済み。",
+ "NPC SCRIPTS/VOC_EWAXXSENTRY.NSF@dc4": "保安許可を確認中……確認中……保安許可を確認できません。更新ログを確認。ファイルを更新中。キャッシュから新規エントリを検索中。確認中……アクセス承認。",
+ "_notes": [
+  "Mt. Gigas は「ギガス山」、General Yamir's office は「ヤミール将軍の執務室」、Yamir は「ヤミール」に従った",
+  "Security は「保安部」と訳した"
+ ]
+}

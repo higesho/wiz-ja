@@ -1,0 +1,9 @@
+{
+ "NPC SCRIPTS/NPC_GUARD_R_LANDSLIDE.NSF@46": "お前たち、ここを通れると思うな!",
+ "NPC SCRIPTS/NPC_GUARD_R_LANDSLIDE.NSF@99": "お前! どうやってあそこに入った?! サヴァントは、お前を昇神の峰から締め出せと命じているのだ……二度と立ち入らせはしないと約束しよう!",
+ "NPC SCRIPTS/NPC_GUARD_R_LANDSLIDE.NSF@1dc": "昇神するつもりか? そうか。お前の小賢しい秘宝を持って、こちらに来ると思っていたぞ。",
+ "NPC SCRIPTS/NPC_GUARD_R_LANDSLIDE.NSF@2a8": "だが、お前の命運は尽きたと思うがいい! この道が塞がれた今、ラパックスとダークサヴァントが昇神の峰へ至る唯一の道を押さえた。お前は二度と通れぬ!",
+ "_notes": [
+  "Ascension Peak は「昇神の峰」、Ascend は「昇神する」(用語表どおり)。"
+ ]
+}

@@ -1,0 +1,10 @@
+{
+ "NPC SCRIPTS/VOC_EWAXXOFFICER1.NSF@1b": "将軍官舎への立ち入りは制限されています。EWAXXユニットに保安許可を提示してください。",
+ "NPC SCRIPTS/VOC_EWAXXOFFICER1.NSF@1c9": "エラー。ウンパニ帝国連邦の保安許可カードが必要です。",
+ "NPC SCRIPTS/VOC_EWAXXOFFICER1.NSF@726": "保安許可を確認中……アクセス拒否。士官官舎への立ち入りには保安レベル5が必要です。動体センサー作動。",
+ "NPC SCRIPTS/VOC_EWAXXOFFICER1.NSF@875": "保安許可を確認中……アクセス承認。動体センサー停止。注意して進んでください。",
+ "_notes": [
+  "Imperial Umpani Federation は「ウンパニ帝国連邦」、Level は「レベル」に従った",
+  "General's Quarters は「将軍官舎」、Officers' Quarters は「士官官舎」とした"
+ ]
+}

@@ -1,0 +1,24 @@
+このパッチで使っているもの
+==========================
+
+■ 東雲フォント（Shinonome Font）
+  The Electronic Font Open Laboratory（パブリックドメイン）
+  http://openlab.ring.gr.jp/efont/shinonome/
+  shinonome-0.9.11p1 の shnmk12.bdf（12 ドット）と shnmk16.bdf（16 ドット）の字形を、
+  ゲームのフォントの大きさに合わせて wiz8jp.dat に収めています（大きい文字は 12 ドットを 2 倍に拡大）。
+  元の LICENSE・AUTHORS・README を fonts/shinonome/ に同梱しています。
+
+■ 美咲フォント（Misaki Font）
+  Copyright(C) 2002-2021 Num Kadoma
+  http://littlelimit.net/
+  小さい文字（8 ドットのフォント）に、美咲ゴシック（8×8 ドット）の字形を使っています（wiz8jp.dat に収めています）。
+  ライセンス: These fonts are free softwares.
+    Unlimited permission is granted to use, copy, and distribute it, with or without modification,
+    either commercially and noncommercially. THESE FONTS ARE PROVIDED "AS IS" WITHOUT WARRANTY.
+  元のライセンスの文書を fonts/misaki/ に同梱しています。
+
+■ このパッチ
+  ddraw.dll（日本語の表示と動画の再生を行うプログラム）と、日本語の訳文・字形（wiz8jp.dat）、
+  文字の一覧（wiz8jp.chr）、動画の字幕（wiz8jp.sub）を収めています。
+  wiz8jp.dat は、元のゲームのファイルとの差分です。元のゲームのファイルは含みません。
+  動画の字幕は、Windows に入っている Yu Gothic UI で描きます（フォントは同梱していません）。

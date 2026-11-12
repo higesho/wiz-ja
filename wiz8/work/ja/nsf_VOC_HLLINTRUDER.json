@@ -1,0 +1,9 @@
+{
+ "NPC SCRIPTS/VOC_HLLINTRUDER.NSF@71": "警告。記録によれば、敵対的な侵入者が建物に侵入しました。侵入者の身元は……士官マーテンと確認。",
+ "NPC SCRIPTS/VOC_HLLINTRUDER.NSF@1a0": "ウーーガ! ウーーガ!",
+ "NPC SCRIPTS/VOC_HLLINTRUDER.NSF@20f": "このNPCは消去が必要。",
+ "_notes": [
+  "Officer Marten は「士官マーテン」とした",
+  "20f は開発者向けのメモ調の文のため「消去が必要」と訳した。nuked は削除の意"
+ ]
+}

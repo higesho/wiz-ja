@@ -1,0 +1,14 @@
+{
+ "NPC SCRIPTS/VOC_EWAXXTRAIN.NSF@1b": "自動訓練保安。保安許可をガラスパネルに置いてください。",
+ "NPC SCRIPTS/VOC_EWAXXTRAIN.NSF@c2": "保安許可をガラスパネルに置いてください。",
+ "NPC SCRIPTS/VOC_EWAXXTRAIN.NSF@1f7": "アクセス拒否。",
+ "NPC SCRIPTS/VOC_EWAXXTRAIN.NSF@6ea": "現在、この保安レベルでは訓練は許可されていません。",
+ "NPC SCRIPTS/VOC_EWAXXTRAIN.NSF@889": "ガガッ BdDDdtzzz! ……ツーッ! ……ツーッ!",
+ "NPC SCRIPTS/VOC_EWAXXTRAIN.NSF@90e": "警告。配線不良。機器を認定サービスセンターへ返却してください。",
+ "NPC SCRIPTS/VOC_EWAXXTRAIN.NSF@9e7": "砲術室の扉を開放。砲術室へ直行してください。",
+ "NPC SCRIPTS/VOC_EWAXXTRAIN.NSF@a9a": "水中戦術部隊の扉を開放。UTUへ直行してください。",
+ "_notes": [
+  "889 の擬音は原文を残し、前に「ガガッ」を補った",
+  "UTU は英字の略号として残した"
+ ]
+}

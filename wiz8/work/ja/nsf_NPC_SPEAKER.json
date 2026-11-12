@@ -1,0 +1,14 @@
+{
+ "NPC SCRIPTS/NPC_SPEAKER.NSF@3aa": "何だ?",
+ "NPC SCRIPTS/NPC_SPEAKER.NSF@3c3": "はあ?",
+ "NPC SCRIPTS/NPC_SPEAKER.NSF@1e1f": "作戦本部だ。",
+ "NPC SCRIPTS/NPC_SPEAKER.NSF@1f00": "それが聞きたかった。上に通せ、バルブラク。",
+ "NPC SCRIPTS/NPC_SPEAKER.NSF@1fd1": "もう一度言え、バルブラク。何も聞こえんぞ、くそっ。",
+ "NPC SCRIPTS/NPC_SPEAKER.NSF@20a8": "よし。念のため警備を呼ぶ。",
+ "NPC SCRIPTS/NPC_SPEAKER.NSF@218d": "作戦本部だ。バルブラク、また貴様か?",
+ "NPC SCRIPTS/NPC_SPEAKER.NSF@2232": "了解、バルブラク。手配は済んだも同然だ。将軍にはすでに報告してある。通信終了。",
+ "_notes": [
+  "Balbrak は用語表どおりバルブラク",
+  "一人称は「私」または「俺」だが、軍人らしく「俺」に近い「貴様」「〜だ」で統一"
+ ]
+}

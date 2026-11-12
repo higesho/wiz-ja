@@ -1,0 +1,7 @@
+{
+ "NPC SCRIPTS/VOC_EWAXXCANNON1.NSF@d5": "目標:  NARGISST\n 位置: 検出不能\n 状態: 行方不明または破壊\n 命中確率: NA\n ダメージ確率: NA\n",
+ "NPC SCRIPTS/VOC_EWAXXCANNON1.NSF@210": "目標:  NARGISST\n 位置: ドミナス軌道上\n 状態: シールド全開\n 命中確率: 98%\n ダメージ確率: 0% (SHIELDS)",
+ "_notes": [
+  "Missing は用語表どおり「行方不明」。NA、SHIELDS は英字のまま残した"
+ ]
+}

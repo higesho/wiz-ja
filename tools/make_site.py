@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-"""紹介ページ（シリーズのトップ／ウィザードリィ6／ウィザードリィ7）を作る:  python tools/make_site.py  ->  site/
+"""紹介ページ（シリーズのトップ／ウィザードリィ6／7／8）を作る:  python tools/make_site.py  ->  site/
 
 他のシリーズ（higesho.github.io/ultima-ja, mm-ja）と同じ構成・共通スタイル。
 画面の写真は site/wiz6/img/・site/wiz7/img/ に置いた PNG だけが載る（下の SHOTS・SHOTS7 の名前で置く）。
 ウィザードリィ7 の日本語化の本体は ../Wizardry7/jpmod（配布物は jpmod/release/Wizardry7_JP.zip）。
+ウィザードリィ8 の日本語化の本体は ../Wizardry8/JPMod（配布物は JPMod/release/Wizardry8_JP.zip）。写真は site/wiz8/img/（SHOTS8・TALK8）。
 """
 import os, shutil, html
 
@@ -41,6 +42,24 @@ SHOTS7 = [
     ('dos.png', 'DOS 版', 'DOS 版で店の主人に会った画面'),
 ]
 
+RELEASE8 = REPO + '/releases/tag/wiz8-v1.0'
+ZIP8 = 'Wizardry8_JP.zip'
+# ウィザードリィ8 の日本語化の本体は ../../Wizardry8/JPMod（配布物は JPMod/release/Wizardry8_JP.zip）
+SHOTS8 = [
+    ('title.png', 'タイトル画面', 'ウィザードリィ8 のタイトル画面'),
+    ('field.png', 'フィールド', '墜落した船のそばの浜辺を歩くフィールドの画面'),
+    ('status.png', 'キャラクターシート', 'フェアリーの魔術師のキャラクターシート。能力値・特性・装備の効果が日本語で出ている'),
+    ('movie.png', '動画の字幕', 'オープニング動画に日本語の字幕が出ている画面'),
+    ('journal.png', '日誌', '日誌のイベントの画面'),
+]
+# 「会話のしかた」の中に載せる写真
+TALK8 = [
+    ('topics.png', '台詞から拾われたキーワードが話題に追加される', '話題の一覧に、台詞から拾われたキーワードが追加された画面'),
+    ('ask.png', '<code>rumors</code> と入力して質問', '入力欄に rumors と打って質問した画面'),
+    ('whereis.png', '<code>where is anna</code> で所在を尋ねる', '入力欄に where is anna と打って所在を尋ねた画面'),
+    ('talkabout.png', '<code>talk about marten</code> で質問', 'talk about marten と入力し、トレメインがマーテンについて語る画面'),
+]
+
 STYLE_SRC = os.path.join(HERE, 'site_style.css')
 
 OTHER_SERIES = [
@@ -54,7 +73,8 @@ def nav(prefix, here):
     """prefix: ルートからの相対パス（'' か '../'）, here: 'top' か 'wiz6' か 'wiz7'"""
     a = ['<a href="%sindex.html"%s>作品一覧</a>' % (prefix, ' class="here"' if here == 'top' else ''),
          '<a href="%swiz6/index.html"%s>ウィザードリィ6</a>' % (prefix, ' class="here"' if here == 'wiz6' else ''),
-         '<a href="%swiz7/index.html"%s>ウィザードリィ7</a>' % (prefix, ' class="here"' if here == 'wiz7' else '')]
+         '<a href="%swiz7/index.html"%s>ウィザードリィ7</a>' % (prefix, ' class="here"' if here == 'wiz7' else ''),
+         '<a href="%swiz8/index.html"%s>ウィザードリィ8</a>' % (prefix, ' class="here"' if here == 'wiz8' else '')]
     a += ['<a href="%s">%s</a>' % (u, t) for u, t in OTHER_SERIES]
     a.append('<a href="%s">GitHub</a>' % REPO)
     return '\n    '.join(a)
@@ -87,7 +107,9 @@ def existing_shots(game='wiz6', shots=None):
     return [s for s in (shots or SHOTS) if os.path.exists(os.path.join(d, s[0]))]
 
 
-def top_page(shots, shots7=()):
+def top_page(shots, shots7=(), shots8=()):
+    thumb8 = ('<a class="thumb" href="wiz8/index.html"><img src="wiz8/img/%s" alt="%s" loading="lazy"></a>' % (shots8[0][0], html.escape(shots8[0][2]))
+              if shots8 else '<a class="thumb none" href="wiz8/index.html">VIII</a>')
     thumb7 = ('<a class="thumb" href="wiz7/index.html"><img src="wiz7/img/%s" alt="%s" loading="lazy"></a>' % (shots7[0][0], html.escape(shots7[0][2]))
               if shots7 else '<a class="thumb none" href="wiz7/index.html">VII</a>')
     thumb = ('<a class="thumb" href="wiz6/index.html"><img src="wiz6/img/%s" alt="%s" loading="lazy"></a>' % (shots[0][0], html.escape(shots[0][2]))
@@ -101,8 +123,8 @@ def top_page(shots, shots7=()):
 <section class="hero">
 <h1>ウィザードリィ シリーズ 日本語化プロジェクト</h1>
 <p class="tag">ウィザードリィ（Wizardry）シリーズを日本語で遊べるようにする、非公式のファンメイド日本語化プロジェクトです。
-Steam で販売されている版を対象にしています。いまは第6作「Bane of the Cosmic Forge」と第7作「Crusaders of the Dark Savant」を公開しています。
-パッチは、ゲームのフォルダにファイルを上書きで置くだけで日本語になります。</p>
+Steam で販売されている版を対象にしています。いまは第6作「Bane of the Cosmic Forge」、第7作「Crusaders of the Dark Savant」、第8作「Wizardry 8」を公開しています。
+パッチは、ゲームのフォルダにファイルを置くだけで日本語になります。</p>
 </section>
 
 <h2 id="titles">作品一覧</h2>
@@ -127,14 +149,24 @@ Steam で販売されている版を対象にしています。いまは第6作�
       <span class="more"><a href="wiz7/index.html">紹介とダウンロード</a></span>
     </div>
   </li>
+  <li class="ready">
+    %s
+    <div class="body">
+      <span class="state ready">公開中</span>
+      <span class="name"><a href="wiz8/index.html">ウィザードリィ8</a></span>
+      <span class="orig">Wizardry 8（2001年）</span>
+      <span class="desc">第7作から続く、シリーズ第8作。惑星ドミナスを舞台に、宇宙の環への昇神をめぐって諸勢力と争う。動画には日本語の字幕付き。</span>
+      <span class="more"><a href="wiz8/index.html">紹介とダウンロード</a></span>
+    </div>
+  </li>
 </ul>
 
 <div class="text">
 <h2>このプロジェクトについて</h2>
 <ul>
 <li>非公式のファンメイドパッチです。ゲーム本体は Steam などで入手してください。</li>
-<li>パッチは、ゲームのフォルダにファイルを上書きで置くものです。外し方は作品ごとの紹介ページを見てください。</li>
-<li>日本語の表示には、ウィザードリィ6 では美咲フォント（8×8 ドット）、ウィザードリィ7 では東雲フォント（DOS 版は美咲フォントも）を使っています。</li>
+<li>パッチは、ゲームのフォルダにファイルを置くものです。外し方は作品ごとの紹介ページを見てください。</li>
+<li>日本語の表示には、ウィザードリィ6 では美咲フォント（8×8 ドット）、ウィザードリィ7・8 では東雲フォント（ウィザードリィ7 の DOS 版と 8 の小さい文字は美咲フォントも）を使っています。</li>
 <li>種族・職業・呪文などの用語は、作品をまたいでそろえています。</li>
 </ul>
 
@@ -142,7 +174,7 @@ Steam で販売されている版を対象にしています。いまは第6作�
 <p>誤訳や不自然な訳に気づいたら、<a href="%s/issues">GitHub の Issues</a> で教えてください。</p>
 </div>
 </main>
-''' % (thumb, thumb7, REPO)
+''' % (thumb, thumb7, thumb8, REPO)
     s += '\n' + FOOTER
     return s
 
@@ -318,13 +350,152 @@ Steam の既定の場所 <code>C:\Program Files (x86)\Steam\steamapps\common\…
     return s
 
 
+def figs_html(shots):
+    return '\n'.join('  <figure><img src="img/%s" alt="%s" loading="lazy"><figcaption>%s</figcaption></figure>'
+                     % (f, html.escape(alt), cap) for f, cap, alt in shots)
+
+
+def wiz8_page(shots, talk):
+    og = BASE + 'wiz8/img/' + shots[0][0] if shots else None
+    desc = 'Steam 版 ウィザードリィ8（Wizardry 8）を日本語で遊べるようにする、非公式のファンメイドパッチ。動画の日本語字幕付き。'
+    s = head('ウィザードリィ8 日本語化パッチ — ウィザードリィ シリーズ 日本語化プロジェクト', desc,
+             BASE + 'wiz8/', 'article', og, '../style.css')
+    s += header('../', 'wiz8')
+    shots_html = '\n<h2>画面</h2>\n<div class="shots">\n%s\n</div>\n' % figs_html(shots) if shots else ''
+    talk_html = '\n<div class="shots">\n%s\n</div>\n' % figs_html(talk) if talk else ''
+    body = """
+<main class="band">
+<section class="hero">
+<p class="sub">Wizardry 8（2001年）</p>
+<h1>ウィザードリィ8 日本語化パッチ</h1>
+<p class="tag">Steam 版の「Wizardry 8」を日本語で遊べるようにする、非公式のファンメイドパッチです。
+物語や住人たちとの会話、メニューと各画面、戦闘の文言、日誌、品物・怪物・人物・呪文・技能の名前と説明まで日本語にしています。
+動画（オープニング、各陣営の導入、エンディング）には日本語の字幕を付けました。
+ゲームのフォルダにファイルを置くだけで日本語になります。元のゲームのファイルは書き換えません。</p>
+<p><a class="dl" href="@RELEASE@">ダウンロード（GitHub）</a></p>
+</section>
+
+<div class="text">
+<h2>どんなゲーム？</h2>
+<p>ウィザードリィ8は、2001年に発売されたシリーズ第8作です。第7作の結末から物語が続き、惑星ドミナスを舞台に、
+ダークサヴァントやトラン、ウンパニなどの勢力と、宇宙の環への昇神をめぐって争います。</p>
+<p>種族・職業・呪文などの用語は、<a href="../wiz6/index.html">ウィザードリィ6</a>・<a href="../wiz7/index.html">ウィザードリィ7</a> の日本語化パッチとそろえています。</p>
+</div>
+@SHOTS@
+<div class="text">
+<h2>入れ方</h2>
+<ol>
+<li>ゲームを終了します。</li>
+<li>ダウンロードした <code>@ZIP@</code> を展開し、中の <code>ddraw.dll</code>・<code>wiz8jp.dat</code>・<code>wiz8jp.chr</code>・<code>wiz8jp.sub</code> の 4 つを、ゲームのフォルダにコピーします。</li>
+<li>いつもどおり Steam から起動します。</li>
+</ol>
+<p>ゲームのフォルダは、Steam でゲームを右クリック → 管理 → ローカルファイルを閲覧、で開く場所です（<code>Wiz8.exe</code>・<code>Data</code> フォルダがある場所）。</p>
+
+<h2>外し方</h2>
+<ul>
+<li>置いた 4 つのファイル（<code>ddraw.dll</code>・<code>wiz8jp.dat</code>・<code>wiz8jp.chr</code>・<code>wiz8jp.sub</code>）を削除すると、元の英語版に戻ります。元のファイルは書き換えていないので、整合性の確認も要りません。</li>
+<li>セーブデータの形式は変更していません。日本語化の前後で同じセーブデータを使えます（メッセージ欄の過去の文は、保存したときの言語のままです）。</li>
+</ul>
+
+<h2>しくみ</h2>
+<p><code>ddraw.dll</code> をゲームのフォルダに置くと、ゲームが起動時に読み込みます（Windows の ddraw.dll への中継を兼ねています）。
+ゲームがデータを読み込むときに、<code>wiz8jp.dat</code> の訳文と日本語の字形を当てます。<code>wiz8jp.dat</code> は元のファイルとの差分で、
+元のファイルが Steam 版と違うときは、そのファイルは英語のまま表示します。</p>
+
+<h2>動画と字幕</h2>
+<p>元のゲーム（Steam 版）には、動画を再生する所で画面の準備に失敗し、動画が映らない・止まる不具合があります。
+このパッチでは、動画を Glide（Steam 版に付属の nGlide）の画面に直接描くように直し、動画が映るようにしました。
+台詞のある動画（オープニング、ウンパニ・トラン・無所属・新しいパーティーの導入、エンディング）には日本語の字幕が出ます。</p>
+</div>
+
+<div class="text">
+<h2 id="talk">会話のしかた（キーワードで質問する）</h2>
+<p>ウィザードリィ8の会話は、英語の言葉（キーワード）で相手に質問するしくみです。
+日本語に訳すとゲームが言葉を聞き取れなくなるため、<strong>入力する言葉は英語のまま</strong>にしています。</p>
+
+<h3>台詞の中のキーワード</h3>
+<p>台詞の中で、質問に使える言葉には「ドミナス(DOMINUS)」「宇宙の環(COSMIC CIRCLE)」のように英語を添えています。
+かっこの中の英語が、そのまま入力できるキーワードです。</p>
+<p>相手の台詞に出てきたキーワードは、ゲームが自動で拾って、画面右の話題の一覧に追加します。
+一覧の言葉を選んで「話題」を押せば、入力しなくても質問できます。一覧は「人物」「場所」「アイテム」「その他」で絞り込めます。</p>
+
+<h3>質問のしかた</h3>
+<ul>
+<li><strong>一覧から選ぶ</strong>：話題の一覧で言葉を選び、「話題」を押すとその言葉について尋ねます。「所在」を押すと、その人や場所がどこにあるかを尋ねます。</li>
+<li><strong>入力する</strong>：右下の入力欄に英語で打ち、Enter キーを押します。大文字・小文字は区別しません。
+一覧にまだない言葉でも、相手が知っていれば答えてくれます。</li>
+</ul>
+<p>パーティーの質問は「martenについて教えて。」のように、打った英語＋日本語の文で表示されます。</p>
+
+<h3>入力できる文の形</h3>
+<p>入力欄では、キーワードだけを打つほかに、次の書き出しが使えます。<code>talk about</code> と <code>where</code> で始まる形は、あとにキーワードを続けます。<code>join</code> と <code>recruit</code> はそれだけで打ちます。</p>
+<table class="ver">
+<tr><th>入力の形</th><th>意味</th><th>入力の例</th></tr>
+<tr><td><code>キーワード</code></td><td>その言葉について尋ねる</td><td><code>rumors</code>　<code>marten</code>　<code>dark savant</code></td></tr>
+<tr><td><code>talk about キーワード</code></td><td>その言葉について尋ねる</td><td><code>talk about marten</code></td></tr>
+<tr><td><code>where is 名前</code></td><td>人や場所がどこにあるかを尋ねる</td><td><code>where is anna</code>　<code>where is arnika</code></td></tr>
+<tr><td><code>where are 名前</code></td><td>同上（複数のもの）</td><td><code>where are umpani</code></td></tr>
+<tr><td><code>where's 名前</code></td><td>同上</td><td><code>where's tramain</code></td></tr>
+<tr><td><code>join</code></td><td>仲間に加わってほしいと頼む（仲間になる人物だけ）</td><td><code>join</code></td></tr>
+<tr><td><code>recruit</code></td><td>同上</td><td><code>recruit</code></td></tr>
+</table>
+<p>上のどれにも当てはまらない英文を打ったときは、文を単語に分けて、その中にキーワードがあればそれで質問します
+（例：<code>what about marten</code> なら <code>marten</code> で尋ねます）。二語以上のキーワード（<code>dark savant</code> など）は、その言葉だけを打ってください。</p>
+
+<h3>よく使うキーワードの例</h3>
+<table class="ver">
+<tr><th>種類</th><th>キーワード（入力する英語）</th></tr>
+<tr><td>あいさつ・世間話</td><td><code>hi</code>　<code>how are you</code>　<code>rumors</code>　<code>bye</code></td></tr>
+<tr><td>商売</td><td><code>trade</code>　<code>buy</code>　<code>items</code>　<code>armor</code>　<code>magic</code>　<code>potion</code></td></tr>
+<tr><td>物語の鍵</td><td><code>dark savant</code>（ダークサヴァント）　<code>cosmic circle</code>（宇宙の環）　<code>ascension peak</code>（昇神の峰）　<code>destinae dominus</code>（デスティナエ・ドミナス）　<code>marten</code>（マーテン）　<code>phoonzang</code>（フーンザン）</td></tr>
+<tr><td>場所</td><td><code>arnika</code>（アルニカ）　<code>trynton</code>（トリントン）　<code>marten bluff</code>　<code>rapax castle</code>　<code>new city</code>　<code>monastery</code>（修道院）</td></tr>
+<tr><td>種族・勢力</td><td><code>t'rang</code>（トラン）　<code>umpani</code>（ウンパニ）　<code>rapax</code>（ラパックス）　<code>mook</code>（ムーク）　<code>higardi</code>（ハイガーディ）　<code>trynnie</code>（トリニー）</td></tr>
+<tr><td>人物</td><td><code>vi domina</code>（ヴィ・ドミナ）　<code>anna</code>（アンナ）　<code>tramain</code>（トレメイン）　<code>zant</code>　<code>barlone</code></td></tr>
+</table>
+<p>答えの中にさらにキーワードが出てくるので、それをたどって話を広げていくのがウィザードリィ8の会話の進め方です。
+多くの住人は、つづりを少し間違えた言葉（<code>ascention</code> など）も聞き取ってくれます。</p>
+</div>
+@TALK@
+<div class="text">
+<h2>遊ぶときの注意</h2>
+<ul>
+<li>会話で入力する言葉（キーワード）は英語のままです（上の「会話のしかた」を見てください）。謎かけの答えや、端末のログイン名・パスワードなども英語で入力します。</li>
+<li>キャラクターの名前は英字で入力します。</li>
+<li>ボタンなど、画像として描かれている文字は英語のままです。</li>
+<li>日誌は 1 件を 1 行で表示する作りのため、訳文を短くまとめています。</li>
+<li>文章は機械翻訳をもとにしています。不自然な訳や誤訳があるかもしれません。全場面の確認は終わっていません。</li>
+<li>Windows 11 の Steam 版（nGlide で描画）で動作を確認しています。ほかの版（GOG 版など）は確認していません。</li>
+<li>ほかに <code>ddraw.dll</code> を使う MOD やツール（画面のラッパーなど）とは同時に使えません。</li>
+</ul>
+
+<h2>ご意見・誤訳の報告</h2>
+<p>誤訳や不自然な訳に気づいたら、<a href="@REPO@/issues">GitHub の Issues</a> で教えてください。</p>
+
+<h2>クレジット</h2>
+<ul>
+<li>日本語の表示に東雲フォント（パブリックドメイン）と美咲フォント（Num Kadoma 氏）の字形を使っています。動画の字幕は Windows の Yu Gothic UI で表示します。</li>
+<li>このパッチの使用は自己責任でお願いします。</li>
+</ul>
+</div>
+</main>
+"""
+    for k, v in (('@RELEASE@', RELEASE8), ('@ZIP@', ZIP8), ('@REPO@', REPO), ('@SHOTS@', shots_html), ('@TALK@', talk_html)):
+        body = body.replace(k, v)
+    return s + body + '\n' + FOOTER
+
+
 def main():
     os.makedirs(os.path.join(SITE, 'wiz6', 'img'), exist_ok=True)
+    os.makedirs(os.path.join(SITE, 'wiz8', 'img'), exist_ok=True)
     os.makedirs(os.path.join(SITE, 'wiz7', 'img'), exist_ok=True)
     shutil.copyfile(STYLE_SRC, os.path.join(SITE, 'style.css'))
     shots = existing_shots()
     shots7 = existing_shots('wiz7', SHOTS7)
-    open(os.path.join(SITE, 'index.html'), 'w', encoding='utf-8', newline='\n').write(top_page(shots, shots7))
+    shots8 = existing_shots('wiz8', SHOTS8)
+    talk8 = existing_shots('wiz8', TALK8)
+    open(os.path.join(SITE, 'index.html'), 'w', encoding='utf-8', newline='\n').write(top_page(shots, shots7, shots8))
+    open(os.path.join(SITE, 'wiz8', 'index.html'), 'w', encoding='utf-8', newline='\n').write(wiz8_page(shots8, talk8))
+    print('screenshots included: wiz8 %d / %d, talk %d / %d' % (len(shots8), len(SHOTS8), len(talk8), len(TALK8)))
     open(os.path.join(SITE, 'wiz7', 'index.html'), 'w', encoding='utf-8', newline='\n').write(wiz7_page(shots7))
     open(os.path.join(SITE, 'wiz6', 'index.html'), 'w', encoding='utf-8', newline='\n').write(wiz6_page(shots))
     have = {s[0] for s in shots}

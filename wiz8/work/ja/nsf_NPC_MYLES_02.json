@@ -1,0 +1,15 @@
+{
+ "NPC SCRIPTS/NPC_MYLES.NSF@9d1b": "ラパックスを探してるって? 自分で探せよ! 誰かに居場所をばらす気はねえからな。",
+ "NPC SCRIPTS/NPC_MYLES.NSF@9e92": "誰が気にするかよ? 俺は仲間の動向しか把握してねえよ。",
+ "NPC SCRIPTS/NPC_MYLES.NSF@a037": "修道院は、ここの宗教関係の連中の本拠地だ。街の北西、少し道を下ったところにあるぜ。",
+ "NPC SCRIPTS/NPC_MYLES.NSF@a19a": "それが俺の名前さ。俺について話すことはそう多くねえよ。ああ、噂はいろいろあるが、無視しとくのがいいぜ。",
+ "NPC SCRIPTS/NPC_MYLES.NSF@a294": "彼女本人に聞きな。女ってのは、話題にされるのを嫌うからな。特に俺の話ってんならな。",
+ "NPC SCRIPTS/NPC_MYLES.NSF@a374": "だから、そう言っただろ……",
+ "NPC SCRIPTS/NPC_MYLES.NSF@a7bf": "ここから北だ。",
+ "NPC SCRIPTS/NPC_MYLES.NSF@a7ea": "ここから南だ。",
+ "NPC SCRIPTS/NPC_MYLES.NSF@a815": "東へ行け。",
+ "NPC SCRIPTS/NPC_MYLES.NSF@a834": "西へ向かえ。",
+ "_notes": [
+  "Rapax → ラパックス (用語表どおり)"
+ ]
+}
