@@ -818,9 +818,17 @@ static void copy_capped(char *dst, const char *src, int cap)
     dst[n] = 0;
 }
 
+/* 看板 (# で始まる物語) の表示中は 1 (hk_gold_split が立て、物語の新しいブロックや ] @ で下ろす) */
+static int g_sign;
+static int g_block_prev = -10;
+
 static void __cdecl hk_msg_fetch(int id, char *dst)
 {
     short sid = (short)id;
+    if ((DWORD)_ReturnAddress() - g_delta == 0x47838c) {     /* 物語ブロックの 1 件ずつの取得 */
+        if (sid != g_block_prev + 1) g_sign = 0;
+        g_block_prev = sid;
+    }
     if (sid >= 0 && g_msg[sid]) {
         int cap = site_cap((DWORD)_ReturnAddress());
         if (*P(short *, A_GAME_STATE) == 3) return;
@@ -1036,6 +1044,14 @@ static void __cdecl hk_gold_split(char *msg)
             size_t before = strlen(line), n;
             memcpy(unit, w, c);
             unit[c] = 0;
+            {
+                int i;
+                for (i = 0; i < c; i++) {
+                    if (unit[i] == '~') { i++; continue; }
+                    if (unit[i] == '#') g_sign = 1;
+                    else if (unit[i] == ']' || unit[i] == '@') g_sign = 0;
+                }
+            }
             add_word(unit);
             if (*P(short *, A_GAME_STATE) == 3) return;
             n = strlen(line);
@@ -1065,6 +1081,19 @@ static void __cdecl hk_gold_split(char *msg)
         }
         p = we;
     }
+}
+
+/* 看板の行を少し上へ (0x47b7a6 の setpos 0x426e11 の呼び出しを差し替え)。
+ * 行の y は 0x92 + 12*行 で、看板は空行 + 2 行が基本。日本語 (12 ドット) で 3 行目まで使うと
+ * 下の枠に掛かるので、看板の間だけ全体を SIGN_DY 上げる (上の余白は 4 ドットほど)。 */
+#define A_LINE_SETPOS_CALL 0x47b88d
+#define A_SETPOS           0x426e11
+#define SIGN_DY            4
+static void __cdecl hk_line_setpos(int x, int y)
+{
+    typedef void (__cdecl *setpos_t)(int, int);
+    if (g_sign) y -= SIGN_DY;
+    P(setpos_t, A_SETPOS)(x, y);
 }
 
 /* ------------------------------------------------------------------ */
@@ -1553,6 +1582,106 @@ static void write_jmp(unsigned char *at, void *to)
     FlushInstructionCache(GetCurrentProcess(), at, 5);
 }
 
+/* ------------------------------------------------------------------ */
+/* 音声・音楽ファイルのパスのあふれ (ゲーム本体の不具合)                   */
+/*  ゲームは「カレントフォルダ\res\media\audio\ID.wav」を 80 バイトのスタック */
+/*  上のバッファに組み立てる。フォルダのパスが 54 字を超えるとあふれて、直後 */
+/*  の変数を壊す。0x40f176 (人物の台詞) では直後がメッセージのバッファで、   */
+/*  台詞が ".wav" の末尾 "av" に化ける (Steam の既定の場所でも起きる長さ)。  */
+/*  lea eax,[ebp-X] (6 バイト) を mov eax,静的バッファ + nop に替える。       */
+/* ------------------------------------------------------------------ */
+static const struct { DWORD func; DWORD end; long disp; int count; } PATHBUF_SITES[] = {
+    {0x40f176, 0x40f420, -0x1a4, 10},   /* 人物の台詞の音声 */
+    {0x43d69a, 0x43d8a0, -0x1a0, 9},    /* 音声 */
+    {0x409141, 0x4096c0, -0x460, 3},    /* 音楽 */
+    {0x476d65, 0x477300, -0x84, 6},     /* 音楽 */
+};
+static char g_pathbuf[sizeof PATHBUF_SITES / sizeof PATHBUF_SITES[0]][512];
+
+static void patch_pathbufs(void)
+{
+    int i;
+    for (i = 0; i < (int)(sizeof PATHBUF_SITES / sizeof PATHBUF_SITES[0]); i++) {
+        unsigned char *a = P(unsigned char *, PATHBUF_SITES[i].func), *e = P(unsigned char *, PATHBUF_SITES[i].end);
+        unsigned char pat[6] = {0x8D, 0x85};
+        unsigned char *q;
+        int found = 0;
+        *(long *)(pat + 2) = PATHBUF_SITES[i].disp;
+        for (q = a; q + 6 <= e; q++)
+            if (!memcmp(q, pat, 6)) found++;
+        if (found != PATHBUF_SITES[i].count) {
+            logf("pathbuf %08lx: %d sites (expected %d), skipped", PATHBUF_SITES[i].func, found, PATHBUF_SITES[i].count);
+            continue;
+        }
+        for (q = a; q + 6 <= e; q++) {
+            if (memcmp(q, pat, 6)) continue;
+            {
+                DWORD old;
+                VirtualProtect(q, 6, PAGE_EXECUTE_READWRITE, &old);
+                q[0] = 0xB8;                                   /* mov eax, imm32 */
+                *(DWORD *)(q + 1) = (DWORD)g_pathbuf[i];
+                q[5] = 0x90;
+                VirtualProtect(q, 6, old, &old);
+            }
+            q += 5;
+        }
+    }
+    FlushInstructionCache(GetCurrentProcess(), NULL, 0);
+}
+
+/* ------------------------------------------------------------------ */
+/* 仲間を加える一覧の 1 行 (0x476b22 の中)                                */
+/*  1 行 20 バイト (0x4b07c0 + 20*行) = 名前 10 + 性別名の先頭 1 バイト +   */
+/*  "-" + 職業名の先頭 3 バイト (英語の M-FIG)。日本語では字の途中で切れて */
+/*  「ーレ」のようになるので、性別 1 字 + "-" + 職業の略称 2 字 にする。    */
+/*  略称は Wiz6・DOS 版 (dos/msg_dos.txt の 9980〜) と同じ。                */
+/* ------------------------------------------------------------------ */
+#define A_PARTY_ROWS  0x4b07c0
+#define A_PARTY_FROM  0x476c0e   /* lea eax,[ebp-0x298] (性別名の取得から) */
+#define A_PARTY_BACK  0x476cce   /* mov ax,[ebp-0x2bc] (行の終端の後) */
+static const unsigned char PARTY_FROM_CODE[] = {0x8D, 0x85, 0x68, 0xFD, 0xFF, 0xFF};
+static const unsigned char PARTY_BACK_CODE[] = {0x66, 0x8B, 0x85, 0x44, 0xFD, 0xFF, 0xFF};
+static const char *const CLASS_ABBR[14] = {
+    "戦士", "魔術", "僧侶", "盗賊", "野伏", "錬金", "詩人", "超能", "戦乙", "司教", "君主", "侍", "修道", "忍者"
+};
+static DWORD g_party_back;
+
+static void __cdecl party_row(int row, int sex, int cls)
+{
+    char *r = P(char *, A_PARTY_ROWS) + 20 * row;
+    char buf[300], enc[16];
+    int n = 10, k;
+    hk_msg_fetch(0x8c + sex, buf);
+    if (IS_HI(buf[0]) && IS_HI(buf[1])) { r[n++] = buf[0]; r[n++] = buf[1]; }
+    else r[n++] = buf[0];
+    r[n++] = '-';
+    if (cls >= 0 && cls < 14 && g_msg[0x78 + cls]) {
+        int m = encode_line(CLASS_ABBR[cls], enc, sizeof enc);
+        for (k = 0; k < m && k < 4; k++) r[n++] = enc[k];
+    } else {
+        hk_msg_fetch(0x78 + cls, buf);
+        for (k = 0; k < 3 && buf[k]; k++) r[n++] = buf[k];
+    }
+    r[n] = 0;
+}
+
+__declspec(naked) static void stub_party(void)
+{
+    __asm {
+        pushad
+        movzx eax, byte ptr [ebp - 0x0f]     /* 職業 */
+        push eax
+        movzx eax, byte ptr [ebp - 0x10]     /* 性別 */
+        push eax
+        movsx eax, word ptr [ebp - 0x2c8]    /* 行 */
+        push eax
+        call party_row
+        add esp, 12
+        popad
+        jmp [g_party_back]
+    }
+}
+
 static BOOL install_hooks(void)
 {
     unsigned char *dc = P(unsigned char *, A_DRAW_CHAR);
@@ -1573,9 +1702,11 @@ static BOOL install_hooks(void)
         write_jmp(P(unsigned char *, A_WRAP), hk_wrap);
     else
         logf("wrap_text: unexpected code, not hooked");
-    if (!memcmp(P(unsigned char *, A_GOLD_SPLIT), PROLOGUE_GSPLIT, sizeof PROLOGUE_GSPLIT))
+    if (!memcmp(P(unsigned char *, A_GOLD_SPLIT), PROLOGUE_GSPLIT, sizeof PROLOGUE_GSPLIT)) {
         write_jmp(P(unsigned char *, A_GOLD_SPLIT), hk_gold_split);
-    else
+        if (!patch_call(A_LINE_SETPOS_CALL, A_SETPOS, hk_line_setpos))
+            logf("draw_line setpos: unexpected code, not hooked");
+    } else
         logf("gold split_words: unexpected code, not hooked");
     {
         int i, ok = 0, n = sizeof STRLEN_SITES / sizeof STRLEN_SITES[0];
@@ -1586,6 +1717,13 @@ static BOOL install_hooks(void)
         FlushInstructionCache(GetCurrentProcess(), NULL, 0);
         logf("strlen sites patched: %d/%d", ok, n);
     }
+    patch_pathbufs();
+    if (!memcmp(P(unsigned char *, A_PARTY_FROM), PARTY_FROM_CODE, sizeof PARTY_FROM_CODE) &&
+        !memcmp(P(unsigned char *, A_PARTY_BACK), PARTY_BACK_CODE, sizeof PARTY_BACK_CODE)) {
+        g_party_back = P(DWORD, A_PARTY_BACK);
+        write_jmp(P(unsigned char *, A_PARTY_FROM), stub_party);
+    } else
+        logf("party list row: unexpected code, not hooked");
     ui_install();
     scen_install();
     logf("hooks installed (delta=%08lx)", g_delta);
