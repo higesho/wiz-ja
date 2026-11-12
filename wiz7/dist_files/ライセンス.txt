@@ -1,12 +1,26 @@
 このパッチで使っているもの
 ==========================
 
-■ 東雲フォント（Shinonome Font）
+■ 東雲フォント（Shinonome Font）  … Wizardry Gold 版
   The Electronic Font Open Laboratory（パブリックドメイン）
   http://openlab.ring.gr.jp/efont/shinonome/
   shinonome-0.9.11p1 の shnmk12.bdf（12 ドット）と shnmk16.bdf（16 ドット）を、
   wizardry7gold/jpmod/fonts/shinonome/ にそのまま収めています。元の LICENSE・AUTHORS・README も同じ場所にあります。
+  DOS 版でも、物語などの大きい文字に shnmk12.bdf の字形を使っています（DSAVANT/VGA.DRV の中に収めています）。
+
+■ 美咲フォント（Misaki Font）  … DOS 版
+  Copyright(C) 2002-2021 Num Kadoma
+  http://littlelimit.net/
+  DOS 版のメニューや一覧などの小さい文字に、美咲ゴシック（8×8 ドット）の字形を使っています（DSAVANT/VGA.DRV の中に収めています）。
+  ライセンス: These fonts are free softwares.
+    Unlimited permission is granted to use, copy, and distribute it, with or without modification,
+    either commercially and noncommercially. THESE FONTS ARE PROVIDED "AS IS" WITHOUT WARRANTY.
+  元のライセンスの文書を 美咲フォント_LICENSE.txt として同梱しています。
 
 ■ このパッチ
-  wing32.dll（日本語の表示と画面の拡大を行うプログラム）と、日本語の訳文（jpmod/msg_ja.txt、jpmod/ui_ja.txt）を収めています。
+  Wizardry Gold 版: wing32.dll（日本語の表示と画面の拡大を行うプログラム）と、日本語の訳文
+  （jpmod/msg_ja.txt、jpmod/ui_ja.txt、jpmod/scen_ja.txt）を収めています。
   wing32.dll はゲームが使う WinG の互換品で、ゲームのフォルダに置くと、ゲームが起動時に読み込みます。
+
+  DOS 版: 日本語化した DOS 版のゲームのファイル（DSAVANT フォルダの 19 個）を収めています。
+  元のファイルに日本語の表示の処理・訳文・名前を書き込んだものです。
