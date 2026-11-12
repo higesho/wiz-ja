@@ -33,6 +33,7 @@ SHOTS = [
 RELEASE7 = REPO + '/releases/tag/wiz7-v1.1'
 ZIP7 = 'Wizardry7_JP.zip'
 SHOTS7 = [
+    ('title.png', 'タイトル画面', 'ウィザードリィ7 のタイトル画面'),
     ('menu.png', '起動時のメニュー', 'ウィザードリィ7 日本語版の起動時のメニューの画面'),
     ('story.png', '物語', '冒頭の物語の画面'),
     ('status.png', '能力', 'キャラクターの能力の画面'),
