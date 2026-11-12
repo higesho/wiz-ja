@@ -1,6 +1,8 @@
 # Wizardry 7 Gold 日本語化MOD
 
-Steam 版『Wizardry 7: Crusaders of the Dark Savant』の **Gold Edition (Windows 版, WIZARD.EXE 1.1b)** を日本語化する MOD。
+Steam 版『Wizardry 7: Crusaders of the Dark Savant』の **Gold Edition (Windows 版, WIZARD.EXE 1.1b)** と
+**DOS 版 (DSAVANT フォルダ, DOSBox で起動)** を日本語化する MOD。訳文 (`translation/msg_ja.txt` など) は両方で共通。
+DOS 版の仕組みは下の「DOS 版」を参照。
 
 ## 仕組み
 
@@ -21,6 +23,8 @@ Steam 版『Wizardry 7: Crusaders of the Dark Savant』の **Gold Edition (Windo
 | strlen 呼び出し 82 か所 | `strlen()*6` で固定幅レイアウトしている箇所 | 全角を 1 文字と数える (`src/strlen_sites.h`) |
 | 0x47b169 | `split_words(char*)` (Gold の物語表示) | 日本語を 1 字単位で行に詰める (`hk_gold_split`) |
 | 0x40ef63 | `wrap_text(char*)` (旧来の本文表示) | 同上 (`hk_wrap`) |
+| 0x476c0e〜0x476cce | 仲間を加える一覧の 1 行 (0x4b07c0 + 20×行) の性別・職業 | 元は性別名の先頭 1 バイト + "-" + 職業名の先頭 3 バイトで字が切れる。性別 1 字 + "-" + 職業の略称 2 字 (Wiz6・DOS 版と同じ「野伏」など) にする (`stub_party`) |
+| 0x40f176 ほか 4 関数 | 音声・音楽ファイルのパスを組み立てる 80 バイトのバッファ | ゲーム本体のあふれ対策 (下の「音声ファイルのパスのあふれ」) |
 | IAT (USER32) | `DialogBoxParamA` `SetWindowTextA` `SetDlgItemTextA` `MessageBoxA` `CreateWindowExA` | 起動時メニュー・設定などの Windows 画面とメニューバーを `ui_ja.txt` で訳す |
 
 主なデータ: フォント表 0x4a7930 (24byte/件, +0x0c=ヘッダ), カーソル X/Y 0x4a803c/0x4a8030 (論理 320x200),
@@ -136,6 +140,16 @@ Steam 版『Wizardry 7: Crusaders of the Dark Savant』の **Gold Edition (Windo
   - `translation/msgbuf.tsv`: ID → 容量。`batch.py check` は超える訳文をエラーにする。
 - EXE の逆アセンブル (`wizard_full.asm`) を作り直したら `python tools/msgbuf_scan.py wizard_full.asm` を再実行する。
 
+### 音声ファイルのパスのあふれ (ゲーム本体の不具合、2026-11-12)
+
+- 人物の台詞 (`0x40f176` → `0x40ef63`) は、台詞ごとに「カレントフォルダ`\res\media\audio\ID.wav`」を
+  80 バイトのスタック上バッファ `[ebp-0x1a4]` に組み立てて音声を鳴らす。フォルダのパスが 54 字を超えるとあふれ、
+  直後のメッセージのバッファ `[ebp-0x154]` の先頭が `".wav"` の末尾 `av` で上書きされ、台詞が「av av av …」に化ける
+  (英語でも起きる。Steam の既定の場所 `C:\Program Files (x86)\Steam\...\wizardry7gold` でも 69 字)。
+- DLL の `patch_pathbufs` が、80 バイトのパス用バッファを使う `lea eax,[ebp-X]` (6 バイトの形) を
+  DLL 内の 512 バイトの静的バッファを指す `mov eax,imm32` に替える (`0x40f176` 台詞, `0x43d69a` 音声, `0x409141`・`0x476d65` 音楽)。
+  `0x416e80`・`0x44a315` (音楽) は 3 バイトの形で替えられないので元のまま。
+
 ## 翻訳の作業手順
 
 ```bat
@@ -168,6 +182,7 @@ jpmod/
   jpmod.ini       設定 (初回配置時のみコピー)
   fonts/          東雲フォント (BDF, LICENSE)
   translation/ui_ja.txt  Windows 標準の画面 (起動時メニュー・設定・メニューバー) の訳
+  dos/            DOS 版の日本語化 (build_dos.py, jpdrv.asm, jpenc.py, msg_dos.txt, 解析用スクリプト)
 ```
 
 ## ビルドと配置
@@ -186,14 +201,37 @@ src\build.bat
 python tools\make_release.py      :: release\Wizardry7_JP.zip
 ```
 
-- zip の中身: `wizardry7gold/wing32.dll`、`wizardry7gold/jpmod/` (msg_ja.txt, ui_ja.txt, jpmod.ini, fonts/)、
-  `説明書.txt`、`ライセンス.txt`。ゲームのフォルダ (wizardry7gold がある場所) に展開して上書きするだけ。
+- zip の中身: `wizardry7gold/wing32.dll`、`wizardry7gold/jpmod/` (msg_ja.txt, ui_ja.txt, scen_ja.txt, jpmod.ini, fonts/shinonome/)、
+  `DSAVANT/` (日本語化した DOS 版の 19 ファイル。先に `python dosuild_dos.py`)、`説明書.txt`、`ライセンス.txt`、`美咲フォント_LICENSE.txt`。
+  ゲームのフォルダ (wizardry7gold・DSAVANT がある場所) に展開して上書きするだけ。
 - 配布用の設定は `dist_files/jpmod.ini` (ログなし `log=0`)。説明書・ライセンス表記も `dist_files/`。
-- 外すときは `wizardry7gold/wing32.dll` と `wizardry7gold/jpmod/` を消す (Steam の整合性確認では消えない)。
+- Gold 版を外すときは `wizardry7gold/wing32.dll` と `wizardry7gold/jpmod/` を消す (Steam の整合性確認では消えない)。
+  DOS 版は元の DSAVANT を残しておいて戻す (整合性確認でも戻るが、PCFILE・SAVEGAME も戻ることがある)。
 - zip を展開しての起動を実機で確認済み (2026-11-11)。
 - 公開: https://github.com/higesho/wiz-ja/releases/tag/wiz7-v1.0 (v1.0, 2026-11-11)、紹介ページ https://higesho.github.io/wiz-ja/wiz7/ 。
   サイトとリポジトリは Wizardry 6 のプロジェクト (`../Wizardry6/JPN_PATCH`) の `tools/make_site.py` `tools/make_repo.py` で作る。
   手順は `../Wizardry6/JPN_PATCH/publish/公開手順.md`。
+
+## DOS 版 (DSAVANT)
+
+Steam の「Play Wizardry 7: COTDS (MS-DOS)」(DOSBox) で起動する元の DOS 版。Gold と同じ ID の MSG・SCENARIO なので訳文を共用する。
+実行時に差し込む手段が無いので、ゲームのファイルを書き換えたものを配る (ウィザードリィ6 日本語化と同じ形)。
+
+```bat
+python dosuild_dos.py              :: dos\original (元のファイル) から dos\out に作る
+python dosuild_dos.py --install    :: 作ったものを DSAVANT に置く
+python dosuild_dos.py --uninstall  :: DSAVANT を元に戻す
+```
+
+- 文字コード: 全角 1 字 = 2 バイト `[0x80 + n>>7][0x80 + n&0x7f]` (n は字の番号)。MSG.DBS・SCENARIO.DBS に書き込む。
+  `dos/msg_dos.txt` は DOS 版だけの差し替え (職業の略称 9980〜 など)。
+- 表示: VGA.DRV の後ろに `dos/jpdrv.asm` (nasm 風の記法を keystone で組み立て) を足し、ドライバの領域を 64KB に広げる。
+  1 字を描く関数を差し替え、全角を東雲 12 ドット (大きいフォント) か美咲 8×8 (高さ 8 以下のフォント) で描く。幅の計算・語分けも差し替える。
+- 各オーバーレイ (*.OVR) の手直し (build_dos.py の build_*): 物語の語分け (VBASE・VMAZE・VPCVW・VTREA)、人物の台詞の折り返し (VMNPC)、
+  strlen×6 の中央寄せ・幅、性別の頭文字、仲間の一覧の行、一覧の行の間隔 6→7、店の 2 行の品物名 (VMNPC は 7)、「遭遇！」の帯の位置。
+- 調べるときの道具: `dos/ddis.py` (逆アセンブル・参照探し)、`dos/emutest.py` (unicorn でドライバを動かす)、
+  `dos/savetest/setloc.py` (SAVEGAME.DBS の位置を書き換えて任意の場所から始める。位置は level・区画・区画内の x/y)。
+- 元のファイル (`dos/original/`) と出力 (`dos/out/`) は配らない・載せない。
 
 ## 開発用機能 (`jpmod.ini` の `[debug] log=1` 以上)
 
@@ -212,7 +250,8 @@ python tools\make_release.py      :: release\Wizardry7_JP.zip
 - 画像に描かれた英字 (EXIT など)
 - font0 の行間が詰まる箇所の調整、レイアウト崩れの個別対応
   (能力値ラベルの上下が接する、種族名の前に「ー」が出る)
-- 物語本文は冒頭 (ID 15000〜) で実機確認済み。会話・看板 (`#`)・`~` 付きの場面はまだ見ていない
+- 物語本文・会話・看板・店の一覧は実機で確認済み (2026-11-12、ニューシティのパルークの店)。`~` 付きの場面はまだ見ていない
 - ゲームフォルダを長いパス (約 120 文字) に複製すると起動直後に落ちる (0x47d5ad)。元の挙動かは未確認
-- 会話のキーワード入力は英語のまま (訳文に `(英語)` を添えて案内)。会話画面そのものは実機で未確認
+- 会話のキーワード入力は英語のまま (訳文に `(英語)` を添えて案内)。看板では添え書きを最後の行にまとめる (`keywords.py`)
+- 音楽のパス (0x416e80・0x44a315) の 80 バイトのあふれは直していない (命令が 3 バイトの形で差し替えられない)
 - Haiku による機械翻訳の推敲 (固有名詞の表記揺れ、`#!` 看板の改行位置など)
