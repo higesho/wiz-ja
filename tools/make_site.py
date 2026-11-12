@@ -29,7 +29,7 @@ SHOTS = [
     ('spell.png', '呪文', '呪文の画面'),
 ]
 
-RELEASE7 = REPO + '/releases/tag/wiz7-v1.0.2'
+RELEASE7 = REPO + '/releases/tag/wiz7-v1.1'
 ZIP7 = 'Wizardry7_JP.zip'
 SHOTS7 = [
     ('menu.png', '起動時のメニュー', 'ウィザードリィ7 日本語版の起動時のメニューの画面'),
@@ -38,6 +38,7 @@ SHOTS7 = [
     ('charmenu.png', 'キャラクターメニュー', 'キャラクターメニューの画面'),
     ('talk.png', '会話', '住人との会話の画面'),
     ('battle.png', '戦闘', '戦闘の画面'),
+    ('dos.png', 'DOS 版', 'DOS 版で店の主人に会った画面'),
 ]
 
 STYLE_SRC = os.path.join(HERE, 'site_style.css')
@@ -121,7 +122,7 @@ Steam で販売されている版を対象にしています。いまは第6作�
     <div class="body">
       <span class="state ready">公開中</span>
       <span class="name"><a href="wiz7/index.html">ウィザードリィ7</a></span>
-      <span class="orig">Wizardry 7: Crusaders of the Dark Savant（1992年）／ Wizardry Gold 版</span>
+      <span class="orig">Wizardry 7: Crusaders of the Dark Savant（1992年）／ Wizardry Gold 版・DOS 版</span>
       <span class="desc">前作の結末から続くシリーズ第7作。惑星ガーディアを舞台に、ダークサヴァントや諸勢力と秘宝を争う。</span>
       <span class="more"><a href="wiz7/index.html">紹介とダウンロード</a></span>
     </div>
@@ -133,7 +134,7 @@ Steam で販売されている版を対象にしています。いまは第6作�
 <ul>
 <li>非公式のファンメイドパッチです。ゲーム本体は Steam などで入手してください。</li>
 <li>パッチは、ゲームのフォルダにファイルを上書きで置くものです。外し方は作品ごとの紹介ページを見てください。</li>
-<li>日本語の表示には、ウィザードリィ6 では美咲フォント（8×8 ドット）、ウィザードリィ7 では東雲フォントを使っています。</li>
+<li>日本語の表示には、ウィザードリィ6 では美咲フォント（8×8 ドット）、ウィザードリィ7 では東雲フォント（DOS 版は美咲フォントも）を使っています。</li>
 <li>種族・職業・呪文などの用語は、作品をまたいでそろえています。</li>
 </ul>
 
@@ -220,7 +221,7 @@ def wiz6_page(shots):
 
 def wiz7_page(shots):
     og = BASE + 'wiz7/img/' + shots[0][0] if shots else None
-    desc = 'Steam 版 ウィザードリィ7（Wizardry 7: Crusaders of the Dark Savant）の Wizardry Gold 版を日本語で遊べるようにする、非公式のファンメイドパッチ。'
+    desc = 'Steam 版 ウィザードリィ7（Wizardry 7: Crusaders of the Dark Savant）を日本語で遊べるようにする、非公式のファンメイドパッチ。Wizardry Gold 版と DOS 版に対応。'
     s = head('ウィザードリィ7 日本語化パッチ — ウィザードリィ シリーズ 日本語化プロジェクト', desc,
              BASE + 'wiz7/', 'article', og, '../style.css')
     s += header('../', 'wiz7')
@@ -232,10 +233,11 @@ def wiz7_page(shots):
     s += """
 <main class="band">
 <section class="hero">
-<p class="sub">Wizardry 7: Crusaders of the Dark Savant（Wizardry Gold 版）</p>
+<p class="sub">Wizardry 7: Crusaders of the Dark Savant（Wizardry Gold 版・DOS 版）</p>
 <h1>ウィザードリィ7 日本語化パッチ</h1>
-<p class="tag">Steam 版の「Wizardry 7: Crusaders of the Dark Savant」に付属する Wizardry Gold（Windows 版）を、日本語で遊べるようにする非公式のファンメイドパッチです。
-物語や住人たちとの会話、メニュー、キャラクターの作成と能力の画面、戦闘の文言、品物・怪物・人物・呪文・職業・種族・称号の名前、起動時のメニューまで日本語にしています。
+<p class="tag">Steam 版の「Wizardry 7: Crusaders of the Dark Savant」を、日本語で遊べるようにする非公式のファンメイドパッチです。
+Steam 版に入っている Wizardry Gold（Windows 版）と、DOSBox で動く元の DOS 版の両方に対応しています。
+物語や住人たちとの会話、メニュー、キャラクターの作成と能力の画面、戦闘の文言、品物・怪物・人物・呪文・職業・種族・称号の名前まで日本語にしています。
 ゲームのフォルダにファイルを上書きで置くだけで日本語になります。</p>
 <p><a class="dl" href="%(release)s">ダウンロード（GitHub）</a></p>
 </section>
@@ -243,35 +245,62 @@ def wiz7_page(shots):
 <div class="text">
 <h2>どんなゲーム？</h2>
 <p>ウィザードリィ7「Crusaders of the Dark Savant」は、1992年に発売されたシリーズ第7作です。前作の結末から物語が続き、惑星ガーディアを舞台に、
-ダークサヴァントやさまざまな勢力と、秘宝をめぐって争います。Steam 版には、Windows 向けに作り直された Wizardry Gold 版が付属しており、このパッチはその Gold 版を日本語にします。</p>
-<p>種族・職業・呪文などの用語は、<a href="../wiz6/index.html">ウィザードリィ6 日本語化パッチ</a>とそろえています。</p>
+ダークサヴァントやさまざまな勢力と、秘宝をめぐって争います。Steam 版には、元の DOS 版と、Windows 向けに作り直された Wizardry Gold 版の両方が入っています。</p>
+<p>種族・職業・呪文などの用語は、<a href="../wiz6/index.html">ウィザードリィ6 日本語化パッチ</a>とそろえています。訳文は 2 つの版で共通です。</p>
 </div>
 %(shots)s
 <div class="text">
 <h2>入れ方</h2>
 <ol>
 <li>ゲームを終了します。</li>
-<li>ダウンロードした <code>%(zip)s</code> を展開し、中の <code>wizardry7gold</code> フォルダを、ゲームのフォルダに上書きでコピーします。</li>
-<li>いつもどおり Steam から Wizardry Gold（Windows 版）を起動します。</li>
+<li>（DOS 版を入れる場合）ゲームのフォルダの <code>DSAVANT</code> フォルダを、別の場所に丸ごとコピーして残しておきます。外すときに戻すと英語版に戻ります。</li>
+<li>ダウンロードした <code>%(zip)s</code> を展開し、中の <code>wizardry7gold</code> フォルダと <code>DSAVANT</code> フォルダを、ゲームのフォルダに上書きでコピーします。
+片方の版だけ日本語にしたいときは、そのフォルダだけをコピーします。</li>
+<li>Steam から起動します。「プレイ」を押すと起動方法を選ぶ画面が出るので、遊ぶ版を選びます。</li>
 </ol>
-<p>ゲームのフォルダは、Steam でゲームを右クリック → 管理 → ローカルファイルを閲覧、で開く場所です（<code>wizardry7gold</code> フォルダがある場所）。
-元のゲームのファイルは書き換えません。<code>wing32.dll</code> と <code>jpmod</code> フォルダを追加するだけです。</p>
+<p>ゲームのフォルダは、Steam でゲームを右クリック → 管理 → ローカルファイルを閲覧、で開く場所です（<code>wizardry7gold</code>・<code>DSAVANT</code>・<code>dosbox_windows</code> フォルダがある場所）。</p>
+
+<h2>起動のしかた</h2>
+<table class="ver">
+<tr><th>版</th><th>Steam の起動方法の選択</th><th>日本語化のしくみ</th></tr>
+<tr><td>Wizardry Gold 版（Windows）</td><td><code>Play Wizardry 7: COTDS Gold Edition</code></td><td><code>wing32.dll</code> と <code>jpmod</code> フォルダを追加するだけ（元のファイルは書き換えない）</td></tr>
+<tr><td>DOS 版（DOSBox）</td><td><code>Play Wizardry 7: COTDS (MS-DOS)</code></td><td><code>DSAVANT</code> の 19 個のファイルを日本語化したものに置き換える</td></tr>
+</table>
+<p>DOS 版は、起動の途中の保安認証（マニュアルの単語を入れる画面）で、何も入力せずに Enter を押すと進めます（Steam 版の元の動作です）。</p>
 
 <h2>外し方</h2>
 <ul>
-<li><code>wizardry7gold</code> フォルダの中の <code>wing32.dll</code> と <code>jpmod</code> フォルダを削除すると、元の英語版に戻ります。
-Steam の「ゲームファイルの整合性を確認」では、追加したファイルは消えません。セーブデータの形式は変更していません。</li>
+<li>Gold 版：<code>wizardry7gold</code> フォルダの中の <code>wing32.dll</code> と <code>jpmod</code> フォルダを削除すると、元の英語版に戻ります。</li>
+<li>DOS 版：入れる前に残しておいた <code>DSAVANT</code> フォルダのコピーを上書きで戻します。
+コピーが無いときは Steam の「ゲームファイルの整合性を確認」で元のファイルに戻せますが、そのときキャラクターやセーブのデータも元に戻ってしまうことがあります。
+先に <code>PCFILE</code>・<code>SAVEGAME</code> で始まるファイルを別の場所にコピーしておいてください。</li>
+<li>セーブデータの形式は変更していません。日本語化の前後で同じセーブデータを使えます。</li>
 </ul>
 
 <h2>遊ぶときの注意</h2>
 <ul>
 <li>会話で入力する言葉（キーワード）は英語のままです。日本語に訳すと会話が成立しなくなるため、原文のまま残しています。
-台詞の中のキーワードには「ニューシティ(NEW CITY)」のように英語を添えています。</li>
-<li>キャラクターの名前は英字で入力します。</li>
-<li>ゲーム画面は高さ 1080 ドットまで拡大して表示します。大きさは <code>jpmod</code> フォルダの <code>jpmod.ini</code> で変えられます。起動時のメニューなど Windows の画面は拡大されません。</li>
-<li>画像として描かれている文字（EXIT など）は英語のままです。</li>
+台詞の中のキーワードには「ニューシティ(NEW CITY)」のように英語を添えています。看板では、枠に収めるため英語の添え書きを最後の行にまとめています。</li>
+<li>キャラクターの名前は英字で入力します。画像として描かれている文字（EXIT など）は英語のままです。</li>
 <li>文章は機械翻訳をもとにしています。不自然な訳や誤訳があるかもしれません。全場面の確認は終わっていません。</li>
-<li>Windows 11 の Steam 版（Wizardry Gold 1.1b）で動作を確認しています。ほかの版は確認していません。<code>WIZARD.EXE</code> が違う版では警告が出て、日本語化されずに英語のまま起動します。DOS 版には対応していません。</li>
+<li>Windows 11 の Steam 版で動作を確認しています。ほかの版（GOG 版など）は確認していません。</li>
+</ul>
+
+<h3>Gold 版</h3>
+<ul>
+<li><strong>フォルダの場所（パス）の長さ</strong>：元のゲームには、ゲームのフォルダのパスが長いと人物の台詞が「av av av」のように化ける不具合があります
+（音声ファイルの名前を組み立てる所があふれるためで、英語版でも起きます。<code>wizardry7gold</code> フォルダのパスがおよそ 53 文字を超えると起き、
+Steam の既定の場所 <code>C:\Program Files (x86)\Steam\steamapps\common\…</code> でも超えます）。このパッチではこの不具合を直しています。
+音楽の読み込みの一部（休息のときの曲など）に同じ原因の所が残っていますが、こちらは直していません。</li>
+<li>ゲーム画面は高さ 1080 ドットまで拡大して表示します。大きさは <code>jpmod</code> フォルダの <code>jpmod.ini</code> で変えられます。起動時のメニューなど Windows の画面は拡大されません。</li>
+<li><code>WIZARD.EXE</code> が違う版（Gold 1.1b 以外）では警告が出て、日本語化されずに英語のまま起動します。</li>
+</ul>
+
+<h3>DOS 版</h3>
+<ul>
+<li>Steam の「Play Wizardry 7: COTDS (MS-DOS)」で動作を確認しています。「with DOSBox Daum」と、Linux 版の起動方法では確認していません。</li>
+<li><code>DSAVANT</code> のファイルは Steam 版の DOS 版専用です。ほかの版のゲームには上書きしないでください。</li>
+<li>メニューや一覧などの小さい文字は美咲フォント（8×8 ドット）で表示します。画面の解像度が低いため、文字が小さく詰まって見える所があります。</li>
 </ul>
 
 <h2>ご意見・誤訳の報告</h2>
@@ -279,7 +308,7 @@ Steam の「ゲームファイルの整合性を確認」では、追加した�
 
 <h2>クレジット</h2>
 <ul>
-<li>日本語の表示に東雲フォント（パブリックドメイン）を使っています。</li>
+<li>日本語の表示に東雲フォント（パブリックドメイン）を、DOS 版ではあわせて美咲フォント（Num Kadoma 氏）を使っています。</li>
 <li>このパッチの使用は自己責任でお願いします。</li>
 </ul>
 </div>
