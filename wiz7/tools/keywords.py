@@ -169,9 +169,78 @@ def annotate(ja, en, report=False):
                     break
                 if done:
                     break
+    moved, dropped = gather_sign_tags(out, en, kw)
     if report:
         print(f"書き添え {count} 件 (長さの上限で見送り {skipped} 件)")
+        print(f"看板 {moved} 枚の書き添えを最後の行にまとめた (幅で外した書き添え {dropped} 件)")
     return out
+
+
+# 看板 (# で始まるメッセージと、続く ! で始まる行) は枠が狭く、書き添えで行が増えると枠からはみ出す。
+# 看板の書き添えは本文から外し、最後の行の後ろに「 !(A)(B)」として 1 行にまとめる
+# (看板は空行 + 2 行が基本で、3 行目は英字だけなら入る。DLL が看板の行を 4 ドット上げている)。
+# まとめた行が SIGN_ALL を超えるときは、前から SIGN_FIT に収まる分だけ残す (外したものは台詞などに付いている)。
+SIGN_ALL = 140
+SIGN_FIT = 131
+TAG = re.compile(r"\([^()]+\)")
+TRAIL_CTRL = re.compile(r"(\s+[!%&\]@][!%&\]@]*)+$")
+
+
+def sign_blocks(en):
+    for k in sorted(en):
+        if en[k].startswith("#"):
+            ids = [k]
+            j = k + 1
+            while j in en and en[j].startswith("!") and not en[j].startswith("#"):
+                ids.append(j)
+                j += 1
+            yield ids
+
+
+def gather_sign_tags(out, en, kw):
+    import wrapsim
+    kwset = set(kw)
+
+    def is_kw_tag(tag):
+        return tag[1:-1].replace("_", " ") in kwset
+
+    moved = dropped = 0
+    for ids in sign_blocks(en):
+        ids = [k for k in ids if k in out]
+        if not ids:
+            continue
+        tags = []
+        for k in ids:
+            t = out[k]
+            # 前に作った「 !(A)(B)」の行も集め直す (何度実行しても同じ結果にする)
+            m = re.search(r"\s+!((?:\([^()]+\))+)(?=(\s+[!%&\]@]\S*)*$)", t)
+            if m and all(is_kw_tag(x) for x in TAG.findall(m.group(1))):
+                tags += TAG.findall(m.group(1))
+                t = t[:m.start()] + t[m.end():]
+            for x in TAG.findall(t):
+                if is_kw_tag(x):
+                    tags.append(x)
+                    t = t.replace(x, "", 1)
+            out[k] = t
+        if not tags:
+            continue
+        tags = list(dict.fromkeys(tags))
+        if wrapsim.width("".join(tags).replace("_", " ")) > SIGN_ALL:
+            keep = []
+            for x in tags:
+                if wrapsim.width("".join(keep + [x]).replace("_", " ")) <= SIGN_FIT:
+                    keep.append(x)
+            dropped += len(tags) - len(keep)
+            tags = keep
+        if not tags:
+            continue
+        last = ids[-1]
+        t = out[last]
+        m = TRAIL_CTRL.search(t)
+        cut = m.start() if m else len(t)
+        out[last] = t[:cut] + " !" + "".join(tags) + t[cut:]
+        moved += 1
+    return moved, dropped
 
 
 def cmd_annotate():
@@ -190,7 +259,8 @@ def cmd_annotate():
             out.append(f"{k}\t{new[k]}")
         else:
             out.append(l)
-    batch.OUT.write_text("\n".join(out) + "\n", encoding="utf-8")
+    with batch.OUT.open("w", encoding="utf-8", newline="\n") as f:   # batch.py merge と同じ LF
+        f.write("\n".join(out) + "\n")
 
 
 def cmd_stats():

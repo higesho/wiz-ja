@@ -6,9 +6,13 @@
   wizardry7gold/jpmod/msg_ja.txt       (translation/msg_ja.txt: batch.py merge の結果)
   wizardry7gold/jpmod/ui_ja.txt
   wizardry7gold/jpmod/fonts/shinonome/ (BDF と元の LICENSE など)
+  DSAVANT/ の 19 ファイル     (DOS 版。dos/build_dos.py の出力 dos/out。日本語化した DOS 版のファイルで、上書きする)
   説明書.txt, ライセンス.txt
-元のゲームのファイルは含めない。
+Gold 版は元のゲームのファイルを含めない (wing32.dll と jpmod を追加するだけ)。
+DOS 版は、日本語化したゲームのファイル (DS.EXE・VGA.DRV・オーバーレイ・MSG・SCENARIO) を上書きする
+(ウィザードリィ6 日本語化パッチと同じ形)。先に python dos/build_dos.py を実行しておく。
 """
+import sys
 import zipfile
 from pathlib import Path
 
@@ -28,8 +32,13 @@ def main():
         (MOD / "translation" / "scen_ja.txt", "wizardry7gold/jpmod/scen_ja.txt"),
         (DOCS / "説明書.txt", "説明書.txt"),
         (DOCS / "ライセンス.txt", "ライセンス.txt"),
+        (MOD / "fonts" / "misaki" / "misaki_LICENSE.txt", "美咲フォント_LICENSE.txt"),
     ]
-    for f in sorted((MOD / "fonts").rglob("*")):
+    sys.path.insert(0, str(MOD / "dos"))
+    from build_dos import FILES as DOS_FILES   # noqa: E402
+    for f in DOS_FILES:
+        files.append((MOD / "dos" / "out" / f, "DSAVANT/" + f))
+    for f in sorted((MOD / "fonts" / "shinonome").rglob("*")):
         if f.is_file():
             files.append((f, "wizardry7gold/jpmod/" + f.relative_to(MOD).as_posix()))
     for src, _ in files:
