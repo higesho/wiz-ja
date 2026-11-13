@@ -43,7 +43,7 @@ SHOTS7 = [
     ('dos.png', 'DOS 版', 'DOS 版で店の主人に会った画面'),
 ]
 
-RELEASE8 = REPO + '/releases/tag/wiz8-v1.0.1'
+RELEASE8 = REPO + '/releases/tag/wiz8-v1.0.2'
 ZIP8 = 'Wizardry8_JP.zip'
 # ウィザードリィ8 の日本語化の本体は ../../Wizardry8/JPMod（配布物は JPMod/release/Wizardry8_JP.zip）
 SHOTS8 = [
@@ -423,6 +423,7 @@ def wiz8_page(shots, talk):
 <h3>質問のしかた</h3>
 <ul>
 <li><strong>一覧から選ぶ</strong>：話題の一覧で言葉を選び、「話題」を押すとその言葉について尋ねます。「所在」を押すと、その人や場所がどこにあるかを尋ねます。</li>
+<li><strong>記録欄でクリックする</strong>：画面下の会話の記録欄で「ドミナス(DOMINUS)」のような言葉にポインターを乗せると黄色くなり、クリックすると入力欄に英語のキーワード（DOMINUS）が入ります。そのまま「話題」か「所在」を押して尋ねます（v1.0.2 から）。</li>
 <li><strong>入力する</strong>：右下の入力欄に英語で打ち、Enter キーを押します。大文字・小文字は区別しません。
 一覧にまだない言葉でも、相手が知っていれば答えてくれます。</li>
 </ul>

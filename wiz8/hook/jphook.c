@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Wizardry 8 Japanese localization hook.
  *
  * Built as ddraw.dll (proxy, ddraw_proxy.h): Wiz8.exe imports DDRAW.DLL, which is not a KnownDLL,
@@ -339,6 +339,113 @@ static void patch_roster(void)
         ok++;
     }
     if (ok != 2) logf("roster patch: only %d of 2 sites", ok);
+}
+
+/* Clickable keywords in the conversation log. The English game lets the player click a word in the
+   log (id 3) to append it to the conversation input. Japanese lines break at U+E000 between every
+   character, so each character was a "word". The translation marks every annotated keyword as
+   U+E001 + term + "(KEYWORD)" (tools/keywords.py, no break opportunity inside). Here:
+   - word splitting 0x58fdd0(pos, line, rect) (called at 0x58b1ae / 0x58ff4a when a log line is laid
+     out; rect = {start, end, x0, x1} as 16-bit values) is wrapped: pieces inside one marked span are
+     merged into one word, and words without Latin letters (plain Japanese) are not clickable;
+   - the clicked word's clean-up 0x528f60(buf) (0x56f5e7 / 0x56fa40, before it is appended to the
+     input) is wrapped: only the text inside "(...)" is kept (and it replaces the input), or the Latin
+     part of a plain word (appended, as in the original). */
+typedef int (__cdecl *segword_t)(int pos, const WCHAR *s, short *rect);
+typedef void (__cdecl *wordclean_t)(WCHAR *);
+#define SEGWORD ((segword_t)0x0058fdd0)
+#define WORDCLEAN ((wordclean_t)0x00528f60)
+#define KW_MARK 0xe001
+
+static int kw_span_end(const WCHAR *s, int i)   /* index of the ')' closing the span that holds i, or -1 */
+{
+    int k;
+    for (k = i; k >= 0; k--) {
+        if (s[k] == KW_MARK) break;
+        if (s[k] == L')' && k < i) return -1;
+    }
+    if (k < 0) return -1;
+    for (k = i; s[k] && s[k] != L')'; k++)
+        ;
+    return s[k] ? k : k - 1;
+}
+
+static int __cdecl MySegWord(int pos, const WCHAR *s, short *rect)
+{
+    for (;;) {
+        int r = SEGWORD(pos, s, rect), a, b, e, k;
+        if (r < 0) return r;
+        a = (unsigned short)rect[0];
+        b = (unsigned short)rect[1];
+        e = kw_span_end(s, a);
+        if (e >= 0) {
+            short t[8];
+            while ((unsigned short)rect[1] < e) {
+                int r2 = SEGWORD(r, s, t);
+                if (r2 < 0 || (unsigned short)t[0] > e) break;
+                rect[1] = t[1];
+                rect[3] = t[3];
+                r = r2;
+            }
+            return r;
+        }
+        for (k = a; k <= b; k++)
+            if ((s[k] >= L'A' && s[k] <= L'Z') || (s[k] >= L'a' && s[k] <= L'z')) return r;
+        pos = r;   /* Japanese only: skip */
+    }
+}
+
+static void __cdecl MyWordClean(WCHAR *w)
+{
+    WCHAR t[200];
+    int n = 0;
+    const WCHAR *p = wcschr(w, L'(');
+    if (p) {   /* U+E002 = the unbreakable space inside a keyword ("COSMIC CIRCLE") */
+        for (p++; *p && *p != L')' && n < 199; p++) t[n++] = (*p == 0xe002) ? L' ' : *p;
+        /* a keyword replaces the input instead of being appended to it: both callers keep the current
+           input text (read just before) 0xc8 bytes after the word buffer, and append only if it is not empty */
+        *(WCHAR *)((BYTE *)w + 0xc8) = 0;
+    } else {
+        for (p = w; *p && n < 199; p++) if (*p < 0x80 && *p != L')') t[n++] = *p;
+    }
+    t[n] = 0;
+    wcscpy(w, t);
+    WORDCLEAN(w);
+}
+
+static int patch_call_to(DWORD site, DWORD target, void *fn)
+{
+    BYTE *p = (BYTE *)site;
+    DWORD prot;
+    if (p[0] != 0xe8 || (DWORD)(site + 5 + *(LONG *)(p + 1)) != target) { logf("call site %08x: unexpected bytes, skipped", site); return 0; }
+    if (!VirtualProtect(p, 5, PAGE_EXECUTE_READWRITE, &prot)) return 0;
+    *(LONG *)(p + 1) = (LONG)((DWORD)fn - (site + 5));
+    VirtualProtect(p, 5, prot, &prot);
+    FlushInstructionCache(GetCurrentProcess(), p, 5);
+    return 1;
+}
+
+/* The log's word hit tests (hover 0x590250(log, x, y), click 0x590410(log, x, y, &out)) map y to a line
+   as (y - top) / 11. Japanese glyphs (12 px, bottom-aligned) sit higher in the line than the Latin ones,
+   so a pointer on the middle of a Japanese word fell on the line above; test a few pixels lower. */
+#define KW_DY 6
+static int __cdecl MyLogHover(int log, int x, int y)
+{
+    return ((int (__cdecl *)(int, int, int))0x00590250)(log, x, y + KW_DY);
+}
+static int __cdecl MyLogHit(int log, int x, int y, int *out)
+{
+    return ((int (__cdecl *)(int, int, int, int *))0x00590410)(log, x, y + KW_DY, out);
+}
+
+static void patch_keyword_click(void)
+{
+    int ok = patch_call_to(0x0058b1ae, 0x0058fdd0, (void *)MySegWord) + patch_call_to(0x0058ff4a, 0x0058fdd0, (void *)MySegWord)
+           + patch_call_to(0x0056f5e7, 0x00528f60, (void *)MyWordClean) + patch_call_to(0x0056fa40, 0x00528f60, (void *)MyWordClean)
+           + patch_call_to(0x0056f3b5, 0x00590250, (void *)MyLogHover)
+           + patch_call_to(0x0056f574, 0x00590410, (void *)MyLogHit) + patch_call_to(0x0056f7f0, 0x00590410, (void *)MyLogHit)
+           + patch_call_to(0x0056f9cd, 0x00590410, (void *)MyLogHit);
+    if (ok != 8) logf("keyword click patch: only %d of 8 sites", ok);
 }
 
 /* NSF loader 0x55a140: the narrow copy of a line is malloc(len + 1) ("and eax,0xffff; inc eax; push eax"
@@ -766,6 +873,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
         patch_nsf_alloc();
         patch_phrase_order();
         patch_roster();
+        patch_keyword_click();
         patch_movies();
         load_subs();
         if (!iat_hook(IAT_BinkOpen, (void *)MyBinkOpen, (void **)&o_BinkOpen)

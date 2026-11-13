@@ -108,11 +108,11 @@ def add_japanese(sti_bytes, chars, cache=None, name=''):
     offy = H - gf.height  # align bottom of the JP cell with the bottom of the Latin line
     rc = cache.setdefault(('glyphs', px), {})
     for ch in chars:
-        if ch in ('\ue000', '\u200b'):   # break character (jptext.BREAK); U+200B = old break kept in saved logs
+        if ch in ('\ue000', '\ue001', '\u200b'):   # break (jptext.BREAK), keyword-span mark (jptext.KW_MARK); U+200B = old break kept in saved logs
             s.subs.append(dict(offx=-1, offy=0, w=1, h=1, pixels=b'\0'))   # zero advance
             continue
-        if ch in ('\u2002', '\u3000'):
-            bw = space_w if ch == '\u2002' else gf.render('\u3042')[0]
+        if ch in ('\u2002', '\ue002', '\u3000'):   # U+E002 = jptext.KW_SPACE
+            bw = space_w if ch != '\u3000' else gf.render('\u3042')[0]
             s.subs.append(dict(offx=0, offy=0, w=bw, h=1, pixels=b'\0' * bw))
             continue
         if ch not in rc:

@@ -98,10 +98,12 @@ def load_table():
 
 
 _cache = {}
+KW_MARK = '\ue001'   # invisible start of a clickable "term(KEYWORD)" span (hook: log word splitting / click)
 
 
 def annotate(lid, en, ja, stats=None):
-    """Insert "(KEYWORD)" after the Japanese term of every annotated keyword the English line mentions."""
+    """Insert "(KEYWORD)" after the Japanese term of every annotated keyword the English line mentions,
+    with KW_MARK before the term so the whole "term(KEYWORD)" is one clickable word in the log."""
     if not lid.startswith('NPC SCRIPTS/'):
         return ja
     if 'per' not in _cache:
@@ -128,7 +130,7 @@ def annotate(lid, en, ja, stats=None):
             while i >= 0 and ja[i + len(t):i + len(t) + 1] == '(':
                 i = ja.find(t, i + 1)
             if i >= 0:
-                ja = ja[:i + len(t)] + tag + ja[i + len(t):]
+                ja = ja[:i] + KW_MARK + ja[i:i + len(t)] + tag + ja[i + len(t):]
                 if stats is not None:
                     stats['ok'] = stats.get('ok', 0) + 1
                 break

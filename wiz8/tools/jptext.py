@@ -10,6 +10,8 @@ zero-width in all fonts (see mkfont.py) and uses it as an invisible break opport
 import re
 
 SPACE_VISIBLE = ' '
+KW_MARK = '\ue001'   # start of a clickable keyword span (keywords.annotate), zero-width glyph
+KW_SPACE = '\ue002'  # space inside a keyword span ("COSMIC CIRCLE"): visible, not a break, survives CP932 (F042)
 BREAK = '\ue000'   # invisible break opportunity (private use, zero-advance glyph, accepted by the hooked word-wrap; maps to CP932 F040 so it survives the NPC text conversion)
 JP = re.compile(r'[　-ヿ一-鿿＀-￯]')
 FMT = re.compile(r'%[-+ #0]*\d*(?:\.\d+)?(?:hh|h|ll|l)?[sdiuxXcfgeEp%]')
@@ -49,11 +51,12 @@ def layout(s, breaks=True):
         pos = f.end()
     units.extend(body[pos:])
     out = []
+    span = False   # inside KW_MARK ... ')' (a clickable keyword span): keep it on one line
     for i, u in enumerate(units):
         if u == ' ':
-            out.append(SPACE_VISIBLE)
+            out.append(KW_SPACE if span else SPACE_VISIBLE)
             continue
-        if breaks and out and i > 0:
+        if breaks and out and i > 0 and not (span and u != KW_MARK):
             a, b = units[i - 1], u
             a_last, b_first = a[-1], b[0]
             if (a != ' ' and a_last not in '\n' and b_first != '\n'
@@ -61,6 +64,10 @@ def layout(s, breaks=True):
                     and b_first not in NO_START and a_last not in NO_END):
                 out.append(BREAK)
         out.append(u)
+        if u == KW_MARK:
+            span = True
+        elif u == ')':
+            span = False
     return lead + ''.join(out) + trail
 
 
