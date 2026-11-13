@@ -294,6 +294,53 @@ static void patch_phrase_order(void)
     if (ok != 2) logf("phrase order patch: only %d of 2 sites", ok);
 }
 
+/* Party roster entry (gather party / create party screen, 0x5be9b0): three lines in a 100 px box (game units),
+   name / "%s %d %s" (Level, level, profession) / gender race. "Level 1 Gadgeteer" in Japanese runs 32 px past
+   the box and leaves marks outside it when the list scrolls. Move the level to the name line
+   ("Sprocket ... Lv1", narrow Latin glyphs) and draw the profession alone on line 2.
+   Both lines go through the game's text draw 0x407650(x, y, fmt, ...), cdecl; the name argument is
+   entry + 5 and the level is entry + 0x89, so it is read from name + 0x84. */
+typedef void (__cdecl *drawtext_t)(int, int, const WCHAR *, ...);
+typedef short (__cdecl *textwidth_t)(void *font, int maxlen, const WCHAR *, ...);
+#define DRAWTEXT ((drawtext_t)0x00407650)
+#define TEXTWIDTH ((textwidth_t)0x00406ea0)   /* width in pixels; the roster font is [0x683660] */
+static void __cdecl MyRosterName(int x, int y, const WCHAR *fmt, const WCHAR *name)
+{
+    /* the name font has no visible blank (U+0020 is zero width, U+2002 shows as 'A'), so the level is a
+       second piece of text, right-aligned to the box edge (x + 99, in 640x480 game units) or just after a long name */
+    void *font = *(void **)0x00683660;
+    int lv = *(const int *)((const BYTE *)name + 0x84);
+    int wn = TEXTWIDTH(font, 64, L"%s", name), wl = TEXTWIDTH(font, 16, L"Lv%d", lv);
+    int lx = x + 99 - wl;
+    if (lx < x + wn + 5) lx = x + wn + 5;
+    DRAWTEXT(x, y, L"%s", name);
+    DRAWTEXT(lx, y, L"Lv%d", lv);
+}
+static void __cdecl MyRosterClass(int x, int y, const WCHAR *fmt, const WCHAR *label, int level, const WCHAR *cls)
+{
+    DRAWTEXT(x, y, L"%s", cls);
+}
+
+static void patch_roster(void)
+{
+    static const struct { DWORD site; void *fn; } s[] = {
+        { 0x005bea76, (void *)MyRosterName },
+        { 0x005beaa9, (void *)MyRosterClass },
+    };
+    int i, ok = 0;
+    for (i = 0; i < 2; i++) {
+        BYTE *p = (BYTE *)s[i].site;
+        DWORD prot;
+        if (p[0] != 0xe8 || (DWORD)(s[i].site + 5 + *(LONG *)(p + 1)) != 0x00407650) { logf("roster site %08x: unexpected bytes, skipped", s[i].site); continue; }
+        if (!VirtualProtect(p, 5, PAGE_EXECUTE_READWRITE, &prot)) continue;
+        *(LONG *)(p + 1) = (LONG)((DWORD)s[i].fn - (s[i].site + 5));
+        VirtualProtect(p, 5, prot, &prot);
+        FlushInstructionCache(GetCurrentProcess(), p, 5);
+        ok++;
+    }
+    if (ok != 2) logf("roster patch: only %d of 2 sites", ok);
+}
+
 /* NSF loader 0x55a140: the narrow copy of a line is malloc(len + 1) ("and eax,0xffff; inc eax; push eax"
    at 0x55a1e3). In code page 932 a Japanese character takes two bytes, so allocate 2 * len + 1. */
 static void patch_nsf_alloc(void)
@@ -718,6 +765,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
         patch_bubble_height();
         patch_nsf_alloc();
         patch_phrase_order();
+        patch_roster();
         patch_movies();
         load_subs();
         if (!iat_hook(IAT_BinkOpen, (void *)MyBinkOpen, (void **)&o_BinkOpen)

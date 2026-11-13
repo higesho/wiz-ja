@@ -81,7 +81,7 @@ def main():
     cache = {}
     for n, o, l, st in ents:
         up = n.upper()
-        if up.endswith('.STI') and ('FONTS' + BS in up or up.endswith('_FONT.STI')) and 'PALETTE' not in up:
+        if up.endswith('.STI') and ('FONTS' + BS in up or up.endswith('_FONT.STI')) and not up.startswith('FONTS' + BS + 'PALETTE'):   # PALETTE*.STI are colour tables, not fonts
             f.seek(o)
             data, info = add_japanese(f.read(l), chars, cache, n)
             files[n] = data
