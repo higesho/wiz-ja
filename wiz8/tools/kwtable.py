@@ -9,6 +9,8 @@ player ask with the Japanese term instead (topic list, clicked words in the log)
 Sources: every "term(KEYWORD)" the build writes into the dialogue (keywords.annotate), the keyword table
 (work/kw67), NPC names (NPC.DBS), place names (LEVELS.DBS without the floor number) and the two topics a
 new game starts with (STRINGDATA#2023/#2024).
+
+  g_npc_name[] Japanese NPC name -> English NPC.DBS name, for the level triggers named "_<NPC name>"
 """
 import collections, glob, json, os, re, sys
 
@@ -87,6 +89,17 @@ def build():
     return ({t: [k for k, _ in sorted(c.items(), key=lambda kv: (-kv[1], kv[0]))] for t, c in j2e.items()}, e2j)
 
 
+def npc_names():
+    ja = load_ja()
+    out = set()
+    for x in json.load(open(os.path.join(W, 'text', 'dbs_npc.json'), encoding='utf-8')):
+        if x.get('ctx') == 'NPC name':
+            en_name, ja_name = x['en'].strip(), (ja.get(x['id']) or '').strip()
+            if ja_name and ja_name != en_name and all(0x20 <= ord(c) < 0x7f for c in en_name):
+                out.add((ja_name, en_name))
+    return sorted(out)
+
+
 def lit(s):
     out = []
     for ch in s:
@@ -110,6 +123,12 @@ def main():
         f.write('};\nstatic const struct { const WCHAR *en, *ja; } g_kw_e2j[] = {\n')
         for k in sorted(e2j):
             f.write('    { %s, %s },\n' % (lit(k), lit(e2j[k])))
+        f.write('};\n')
+        # level triggers named "_<NPC name>" start that NPC's script; the game builds the name from the
+        # (translated) NPC.DBS name, so the hook needs the English one back
+        f.write('static const struct { const WCHAR *ja; const char *en; } g_npc_name[] = {\n')
+        for ja_name, en_name in npc_names():
+            f.write('    { %s, %s },\n' % (lit(ja_name), lit(en_name)[1:]))
         f.write('};\n')
     multi = sum(1 for v in j2e.values() if len(v) > 1)
     print('%s: %d Japanese terms (%d with several keywords), %d topic names' % (OUT, len(j2e), multi, len(e2j)))

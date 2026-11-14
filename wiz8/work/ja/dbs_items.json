@@ -762,5 +762,7 @@
   "Cut-off/short items: 'The Ripper' -> 切り裂き; 'Chain' -> チェーン; 'Shillelah' -> シレラ (transliterated).",
   "Dust of Dessication/Desiccation -> 乾燥の粉; Demonsbane -> デーモンズベイン; Dulcimer of Mending -> 修復のダルシマー.",
   "Duplicate English names (Ale x4, Stinger x2, Short Gooda Vine x2, Fire Bomb/Acid Bomb etc.) share one Japanese form."
- ]
+ ],
+ "DATABASES/ITEMS.DBS@2d942": "ヴェイポライザー",
+ "DATABASES/ITEMS.DBS@2e09d": "ネガテア"
 }

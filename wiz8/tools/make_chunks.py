@@ -57,9 +57,12 @@ def terms_in(text, gl):
 INTERNAL = re.compile(r'^(?:<\w+>|Spare\d+|[A-Za-z0-9]+(?:_[A-Za-z0-9]+)+|[A-Z][a-z]+[A-Z]\w*)$')
 
 
+SHOWN = {'VapoRizer', 'NegatAir', 'ArmeGazers'}   # item / monster names that look like internal ids
+
+
 def is_internal(s):
     """engine-internal names that are never shown (level ids, reserved slots)."""
-    return bool(INTERNAL.match(s.strip()))
+    return bool(INTERNAL.match(s.strip())) and s.strip() not in SHOWN
 
 
 def norm(s):

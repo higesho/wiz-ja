@@ -66,6 +66,25 @@ def scan_npc_headers(d, known):
     return res
 
 
+def scan_records(d, rec, fields, known):
+    """ITEMS.DBS / MONSTERS.DBS: u32 count, then fixed-size records. scan_fields wants a zero u16 before a
+    string, so it misses names whose field is preceded by 0xCDCD padding. Read those by record layout.
+    fields: (offset in record, bytes). -> [(file offset, text)] not already in known."""
+    n = struct.unpack_from('<I', d)[0]
+    res = []
+    for i in range(n):
+        for fo, size in fields:
+            o = 4 + i * rec + fo
+            s = d[o:o + size].decode('utf-16le', 'replace').split('\0')[0]
+            if o not in known and re.search('[A-Za-z]{2}', s) and all(okc(ord(c)) for c in s):
+                res.append((o, s))
+    return res
+
+
+ITEM_REC, ITEM_FIELDS = 269, ((0, 60),)
+MONSTER_REC, MONSTER_FIELDS = 663, ((0, 48), (48, 48), (96, 48), (144, 48))   # name, plural, unidentified, plural
+
+
 FACT_REC = 472
 FACT_FIELDS = ((0x38, 100), (0x100, 108))   # (offset in record, WCHARs incl. the terminator)
 
@@ -142,6 +161,13 @@ def main():
             groups['dbs_monsters_hash'] = [
                 {'id': '%s@%x' % (rel, o), 'en': s.split('#')[0].rstrip(), 'ctx': 'monster name'}
                 for o, s in fields if '#' in s and re.search('[A-Za-z]', s.split('#')[0])]
+        if name in ('ITEMS', 'MONSTERS'):
+            rec, fl = (ITEM_REC, ITEM_FIELDS) if name == 'ITEMS' else (MONSTER_REC, MONSTER_FIELDS)
+            # '#' tails are developer notes; the game shows only the part before '#' (kept by the importer)
+            groups['dbs_%s_rec' % name.lower()] = [
+                {'id': '%s@%x' % (rel, o), 'en': s.split('#')[0].rstrip(), 'ctx': ctx}
+                for o, s in scan_records(raw, rec, fl, {o for o, _ in fields})
+                if re.search('[A-Za-z]{2}', s.split('#')[0]) and s not in PLACEHOLDERS]
     d = open(os.path.join(RAW, 'DATABASES', 'FACT.DBS'), 'rb').read()
     groups["dbs_fact"] = [{"id": "DATABASES/FACT.DBS@%x" % o, "en": s, "ctx": "journal entry (%s)" % nm}
                           for o, s, nm, cap in scan_fact(d)]

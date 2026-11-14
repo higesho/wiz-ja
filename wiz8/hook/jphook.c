@@ -625,7 +625,7 @@ static int __cdecl MyAddTopicTalk(WCHAR *word, int cat, int flag)
 }
 
 /* Yes/no questions ([0x649f1c]+0x1fa / +0x200 set, 0x574250): the answer is "yes" only if the input equals
-   STRINGDATA#2015, which is now 「はい」 (the yes button's label), so a typed "yes" counted as no. 0x5742f4 is
+   STRINGDATA#2015, which is now the Japanese word (the yes button's label), so a typed "yes" counted as no. 0x5742f4 is
    that compare (0x402920(input, label), 0 = equal); also accept the English words. */
 typedef int (__cdecl *wcmp_t)(const WCHAR *, const WCHAR *);
 static int __cdecl MyYesCmp(const WCHAR *in, const WCHAR *label)
@@ -655,6 +655,37 @@ static void patch_keyword_click(void)
     for (i = 0; i < 4; i++) ok += patch_call_to(talk[i], 0x00571660, (void *)MyAddTopicTalk);
     ok += patch_call_to(0x005742f4, 0x00402920, (void *)MyYesCmp);
     if (ok != 30) logf("keyword patch: only %d of 30 sites", ok);
+}
+
+/* Level triggers that start an NPC script are found by name: on entering a level, 0x50ac60 builds
+   sprintf("_%S", NPC.DBS name) for each such NPC and binds the trigger of that name (0x443780 at 0x50ad37)
+   to 0x50abf0 (start the conversation). With the translated names (Japanese) no trigger matched, so
+   e.g. the goal of the Umpani obstacle course ("_Sgt. Rubble") fired and was used up without the event.
+   Retry with the English name (g_npc_name, kw_table.h). The name arrives in CP932 (the CRT locale). */
+typedef void *(__cdecl *findtrig_t)(const char *);
+#define FINDTRIG ((findtrig_t)0x00443780)
+static void *__cdecl MyFindNpcTrigger(const char *name)
+{
+    void *t = FINDTRIG(name);
+    WCHAR w[80];
+    char buf[96];
+    int i, n;
+    if (t || !name || name[0] != '_') return t;
+    n = MultiByteToWideChar(932, 0, name + 1, -1, w, 80);
+    if (n <= 0) return t;
+    for (i = 0; i < (int)(sizeof g_npc_name / sizeof g_npc_name[0]); i++) {
+        if (wcscmp(w, g_npc_name[i].ja) != 0) continue;
+        _snprintf(buf, sizeof buf - 1, "_%s", g_npc_name[i].en);
+        buf[sizeof buf - 1] = 0;
+        t = FINDTRIG(buf);
+        if (t) { logf("NPC trigger %s bound", buf); return t; }
+    }
+    return t;
+}
+
+static void patch_npc_trigger(void)
+{
+    if (!patch_call_to(0x0050ad37, 0x00443780, (void *)MyFindNpcTrigger)) logf("NPC trigger patch skipped");
 }
 
 /* NSF loader 0x55a140: the narrow copy of a line is malloc(len + 1) ("and eax,0xffff; inc eax; push eax"
@@ -1083,6 +1114,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
         patch_phrase_order();
         patch_roster();
         patch_keyword_click();
+        patch_npc_trigger();
         patch_movies();
         load_subs();
         if (!iat_hook(IAT_BinkOpen, (void *)MyBinkOpen, (void **)&o_BinkOpen)

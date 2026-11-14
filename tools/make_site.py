@@ -43,7 +43,7 @@ SHOTS7 = [
     ('dos.png', 'DOS 版', 'DOS 版で店の主人に会った画面'),
 ]
 
-RELEASE8 = REPO + '/releases/tag/wiz8-v1.0.4'
+RELEASE8 = REPO + '/releases/tag/wiz8-v1.0.5'
 ZIP8 = 'Wizardry8_JP.zip'
 # ウィザードリィ8 の日本語化の本体は ../../Wizardry8/JPMod（配布物は JPMod/release/Wizardry8_JP.zip）
 SHOTS8 = [
