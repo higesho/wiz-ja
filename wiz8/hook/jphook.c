@@ -349,8 +349,9 @@ static void patch_roster(void)
      out; rect = {start, end, x0, x1} as 16-bit values) is wrapped: pieces inside one marked span are
      merged into one word, and words without Latin letters (plain Japanese) are not clickable;
    - the clicked word's clean-up 0x528f60(buf) (0x56f5e7 / 0x56fa40, before it is appended to the
-     input) is wrapped: only the text inside "(...)" is kept (and it replaces the input), or the Latin
-     part of a plain word (appended, as in the original). */
+     input) is wrapped: a marked span puts its Japanese term into the input (replacing it; MyKwLookup
+     below turns the term back into the keyword), an unmarked "(KEYWORD)" its English text, and a plain
+     word its Latin part (appended, as in the original). */
 typedef int (__cdecl *segword_t)(int pos, const WCHAR *s, short *rect);
 typedef void (__cdecl *wordclean_t)(WCHAR *);
 #define SEGWORD ((segword_t)0x0058fdd0)
@@ -395,13 +396,26 @@ static int __cdecl MySegWord(int pos, const WCHAR *s, short *rect)
     }
 }
 
+static WCHAR g_kw_click_ja[100], g_kw_click_en[100];   /* the last clicked "term(KEYWORD)" pair */
+
 static void __cdecl MyWordClean(WCHAR *w)
 {
     WCHAR t[200];
     int n = 0;
-    const WCHAR *p = wcschr(w, L'(');
+    const WCHAR *p = wcschr(w, L'('), *m = wcschr(w, KW_MARK), *q;
     if (p) {   /* U+E002 = the unbreakable space inside a keyword ("COSMIC CIRCLE") */
-        for (p++; *p && *p != L')' && n < 199; p++) t[n++] = (*p == 0xe002) ? L' ' : *p;
+        int k = 0;
+        for (q = p + 1; *q && *q != L')' && k < 99; q++) g_kw_click_en[k++] = (*q == 0xe002) ? L' ' : *q;
+        g_kw_click_en[k] = 0;
+        if (m && m < p) {   /* marked span: the input gets the Japanese term (MyKwLookup turns it back) */
+            for (q = m + 1; q < p && n < 99; q++) if (*q != 0xe000) t[n++] = *q;
+            t[n] = 0;
+            wcscpy(g_kw_click_ja, t);
+        } else {            /* a line written before the marks existed (older saves): the English keyword */
+            wcscpy(t, g_kw_click_en);
+            n = k;
+            g_kw_click_ja[0] = 0;
+        }
         /* a keyword replaces the input instead of being appended to it: both callers keep the current
            input text (read just before) 0xc8 bytes after the word buffer, and append only if it is not empty */
         *(WCHAR *)((BYTE *)w + 0xc8) = 0;
@@ -438,14 +452,194 @@ static int __cdecl MyLogHit(int log, int x, int y, int *out)
     return ((int (__cdecl *)(int, int, int, int *))0x00590410)(log, x, y + KW_DY, out);
 }
 
+/* Asking with Japanese words. The parser 0x5743b0 looks the player's words up with 0x525e80(text, o1, o2)
+   (five call sites; -1 = no such keyword, o1/o2 are written only on a match): the keywords of the current
+   NPC script are ASCII, so Japanese text (a translated NPC name or starting topic in the topic list, a
+   clicked term) never matched. The game has a table for localized versions (Data\Strings\
+   translated_Keywords.txt -> English_Keywords.txt, 0x56c440), but it is one-to-one, drops words that are
+   not listed and needs files in the game folder; this does the same with kw_table.h (tools/kwtable.py):
+   - MyKwLookup: the Japanese part of the text is replaced by each English keyword of that term until the
+     NPC knows one ("Where is <term>" keeps its English start);
+   - MyAddTopic (0x5775d0(word, category), twelve call sites) and MyAddTopicTalk (0x571660, four): topics
+     the scripts add in English are listed under their Japanese term when there is a short one. */
+#include "kw_table.h"
+typedef int (__cdecl *kwlookup_t)(const WCHAR *, void *, void *);
+typedef int (__cdecl *addtopic_t)(const WCHAR *, int);
+#define KWLOOKUP ((kwlookup_t)0x00525e80)
+#define ADDTOPIC ((addtopic_t)0x005775d0)
+typedef int (__cdecl *addtopic_talk_t)(WCHAR *, int, int);
+#define ADDTOPIC_TALK ((addtopic_talk_t)0x00571660)
+#define KW_TOPIC_MAX 12   /* longest Japanese term (characters) shown in the topic list */
+
+/* text without break / span marks and without the punctuation the game's own clean-up (0x528f60) drops */
+static void kw_clean(const WCHAR *s, WCHAR *out, int max)
+{
+    int n = 0;
+    for (; *s && n < max - 1; s++) {
+        WCHAR c = *s;
+        if (c == 0xe000 || c == 0xe001 || c == 0x200b || c == 0xff1f || c == 0xff01 || c == 0x3002) continue;
+        if (c < 0x80 && wcschr(L"!?@#$,.\":", c)) continue;
+        if (c == 0xe002 || c == 0x2002 || c == 0x3000) c = L' ';
+        out[n++] = c;
+    }
+    while (n && out[n - 1] == L' ') n--;
+    out[n] = 0;
+}
+
+static const WCHAR *kw_find_j2e(const WCHAR *ja)
+{
+    WCHAR k[120];
+    int i;
+    for (i = 0; i < (int)(sizeof(g_kw_j2e) / sizeof(g_kw_j2e[0])); i++) {
+        kw_clean(g_kw_j2e[i].ja, k, 120);
+        if (!_wcsicmp(k, ja)) return g_kw_j2e[i].en;
+    }
+    return NULL;
+}
+
+static const WCHAR *kw_find_e2j(const WCHAR *en)
+{
+    WCHAR k[120];
+    int i;
+    for (i = 0; i < (int)(sizeof(g_kw_e2j) / sizeof(g_kw_e2j[0])); i++) {
+        kw_clean(g_kw_e2j[i].en, k, 120);
+        if (!_wcsicmp(k, en)) return g_kw_e2j[i].ja;
+    }
+    return NULL;
+}
+
+static int kw_ascii(const WCHAR *s)
+{
+    for (; *s; s++) if (*s >= 0x80) return 0;
+    return 1;
+}
+
+static int __cdecl MyKwLookup(const WCHAR *text, void *o1, void *o2)
+{
+    WCHAR t[300], c[420], key[120];
+    const WCHAR *cands;
+    int s, r, n;
+    if (kw_ascii(text)) return KWLOOKUP(text, o1, o2);
+    kw_clean(text, t, 300);
+    if (kw_ascii(t)) return KWLOOKUP(t, o1, o2);
+    for (s = 0; t[s] < 0x80; s++)
+        ;
+    while (s > 0 && t[s - 1] != L' ') s--;      /* t[0..s) = English start ("Where is "), t + s = the term */
+    if (s > 250 || wcslen(t + s) > 100) return KWLOOKUP(t, o1, o2);
+    wcsncpy(c, t, s);
+    if (g_kw_click_ja[0]) {                     /* the pair the player clicked in the log comes first */
+        kw_clean(g_kw_click_ja, key, 120);
+        if (!wcscmp(key, t + s)) {
+            wcscpy(c + s, g_kw_click_en);
+            r = KWLOOKUP(c, o1, o2);
+            if (r != -1) return r;
+        }
+    }
+    cands = kw_find_j2e(t + s);
+    while (cands && *cands) {
+        for (n = 0; cands[n] && cands[n] != L'/'; n++)
+            ;
+        wcsncpy(c + s, cands, n);
+        c[s + n] = 0;
+        r = KWLOOKUP(c, o1, o2);
+        if (r != -1) return r;
+        cands += cands[n] ? n + 1 : n;
+    }
+    return KWLOOKUP(t, o1, o2);
+}
+
+static int kw_topic_exists(const WCHAR *w)   /* is this word in the topic list ([0x649f1c] + 0x1e0 count, + 0x1e8 entries)? */
+{
+    BYTE *b = *(BYTE **)0x00649f1c;
+    WCHAR a[120], k[120];
+    WCHAR **arr;
+    int n, i;
+    if (!b) return 0;
+    n = *(int *)(b + 0x1e0);
+    arr = *(WCHAR ***)(b + 0x1e8);
+    kw_clean(w, k, 120);
+    for (i = 0; i < n && arr; i++) {
+        if (!arr[i] || wcslen(arr[i]) > 100) continue;
+        kw_clean(arr[i], a, 120);
+        if (!_wcsicmp(a, k)) return 1;
+    }
+    return 0;
+}
+
+/* the word to put into the topic list for `word` (written to buf, 200 characters), or NULL = leave it out */
+static const WCHAR *kw_topic_word(const WCHAR *word, WCHAR *buf)
+{
+    WCHAR c[120];
+    const WCHAR *ja, *cands;
+    WCHAR *p;
+    int n;
+    kw_clean(word, buf, 200);
+    p = wcschr(buf, L'(');
+    if (p && !kw_ascii(buf)) {          /* a clicked "term(KEYWORD)" span: the term */
+        if (p > buf) *p = 0;
+        else { for (n = 0; p[n + 1] && p[n + 1] != L')'; n++) buf[n] = p[n + 1]; buf[n] = 0; }
+        kw_clean(buf, buf, 200);
+    }
+    if (kw_ascii(buf)) {
+        ja = kw_find_e2j(buf);
+        /* keep the English word if it is already listed (older saves) or the term is too long for the list */
+        if (ja && wcslen(ja) <= KW_TOPIC_MAX && !kw_topic_exists(buf)) wcscpy(buf, ja);
+        return buf;
+    }
+    cands = kw_find_j2e(buf);
+    if (!cands && buf[0] < 0x80) {      /* "MARTEN" + Japanese particles (a question line): the Latin start */
+        for (n = 0; buf[n] && buf[n] < 0x80; n++)
+            ;
+        buf[n] = 0;
+        kw_clean(buf, buf, 200);
+        return buf[0] ? buf : NULL;
+    }
+    /* Japanese (NPC name, the two starting topics, a clicked term): not again if the list has its English form */
+    while (cands && *cands) {
+        for (n = 0; cands[n] && cands[n] != L'/' && n < 119; n++) c[n] = cands[n];
+        c[n] = 0;
+        if (kw_topic_exists(c)) return NULL;
+        cands += cands[n] ? n + 1 : n;
+    }
+    return buf;
+}
+
+static int __cdecl MyAddTopic(const WCHAR *word, int cat)
+{
+    WCHAR b[200];
+    const WCHAR *w;
+    if (!word || wcslen(word) > 150) return ADDTOPIC(word, cat);
+    w = kw_topic_word(word, b);
+    return w ? ADDTOPIC(w, cat) : 0;
+}
+
+/* the same while the conversation screen is open: 0x571660(word, category, flag) adds to the screen's list
+   (script commands, the "+" button, a word clicked in the log, the NPC's name); it edits `word` in place */
+static int __cdecl MyAddTopicTalk(WCHAR *word, int cat, int flag)
+{
+    WCHAR b[200];
+    const WCHAR *w;
+    if (!word || wcslen(word) > 150) return ADDTOPIC_TALK(word, cat, flag);
+    w = kw_topic_word(word, b);
+    return w ? ADDTOPIC_TALK(b, cat, flag) : 0;
+}
+
 static void patch_keyword_click(void)
 {
+    static const DWORD look[] = { 0x005745a9, 0x00574659, 0x005748e3, 0x0057497c, 0x00574a73 };
+    static const DWORD add[] = { 0x005063f5, 0x00506409, 0x005262eb, 0x0052634d, 0x005263af, 0x00526412,
+                                 0x00526475, 0x005264d7, 0x00526539, 0x00526592, 0x005773fc, 0x005777ee };
+    static const DWORD talk[] = { 0x005265a8, 0x0056f81c, 0x0057164b, 0x005773cc };
+    int i;
     int ok = patch_call_to(0x0058b1ae, 0x0058fdd0, (void *)MySegWord) + patch_call_to(0x0058ff4a, 0x0058fdd0, (void *)MySegWord)
            + patch_call_to(0x0056f5e7, 0x00528f60, (void *)MyWordClean) + patch_call_to(0x0056fa40, 0x00528f60, (void *)MyWordClean)
            + patch_call_to(0x0056f3b5, 0x00590250, (void *)MyLogHover)
            + patch_call_to(0x0056f574, 0x00590410, (void *)MyLogHit) + patch_call_to(0x0056f7f0, 0x00590410, (void *)MyLogHit)
            + patch_call_to(0x0056f9cd, 0x00590410, (void *)MyLogHit);
-    if (ok != 8) logf("keyword click patch: only %d of 8 sites", ok);
+    for (i = 0; i < 5; i++) ok += patch_call_to(look[i], 0x00525e80, (void *)MyKwLookup);
+    for (i = 0; i < 12; i++) ok += patch_call_to(add[i], 0x005775d0, (void *)MyAddTopic);
+    for (i = 0; i < 4; i++) ok += patch_call_to(talk[i], 0x00571660, (void *)MyAddTopicTalk);
+    if (ok != 29) logf("keyword patch: only %d of 29 sites", ok);
 }
 
 /* NSF loader 0x55a140: the narrow copy of a line is malloc(len + 1) ("and eax,0xffff; inc eax; push eax"
