@@ -74,6 +74,13 @@ def build():
     for sid in ('STRINGDATA#2023', 'STRINGDATA#2024'):
         en = {y['id']: y['en'] for y in json.load(open(os.path.join(W, 'text', 'stringdata.json'), encoding='utf-8'))}
         name_pair(en[sid], ja.get(sid))
+    # the yes/no buttons put their (translated) label into the input; NPC scripts answer to YES / NO
+    for sid, kws in (('STRINGDATA#2015', ['YES', 'YEAH', 'YEP', 'SURE']), ('STRINGDATA#2016', ['NO', 'NOPE', 'NEVER']),
+                     ('STRINGDATA#205', ['YES', 'YEAH', 'YEP', 'SURE']), ('STRINGDATA#206', ['NO', 'NOPE', 'NEVER'])):
+        t = (ja.get(sid) or '').strip()
+        if t and JP.search(t):
+            for i, k in enumerate(kws):
+                j2e[t][k] += 1000 - i
     # every topic-list term must lead back to its keyword
     for kw, term in e2j.items():
         j2e[term][kw] += 0

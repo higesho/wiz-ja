@@ -624,6 +624,20 @@ static int __cdecl MyAddTopicTalk(WCHAR *word, int cat, int flag)
     return w ? ADDTOPIC_TALK(b, cat, flag) : 0;
 }
 
+/* Yes/no questions ([0x649f1c]+0x1fa / +0x200 set, 0x574250): the answer is "yes" only if the input equals
+   STRINGDATA#2015, which is now 「はい」 (the yes button's label), so a typed "yes" counted as no. 0x5742f4 is
+   that compare (0x402920(input, label), 0 = equal); also accept the English words. */
+typedef int (__cdecl *wcmp_t)(const WCHAR *, const WCHAR *);
+static int __cdecl MyYesCmp(const WCHAR *in, const WCHAR *label)
+{
+    WCHAR t[120];
+    int r = ((wcmp_t)0x00402920)(in, label);
+    if (r == 0 || !in || wcslen(in) > 100) return r;
+    kw_clean(in, t, 120);
+    if (!_wcsicmp(t, L"yes") || !_wcsicmp(t, L"y") || !_wcsicmp(t, L"yeah") || !_wcsicmp(t, L"yep")) return 0;
+    return r;
+}
+
 static void patch_keyword_click(void)
 {
     static const DWORD look[] = { 0x005745a9, 0x00574659, 0x005748e3, 0x0057497c, 0x00574a73 };
@@ -639,7 +653,8 @@ static void patch_keyword_click(void)
     for (i = 0; i < 5; i++) ok += patch_call_to(look[i], 0x00525e80, (void *)MyKwLookup);
     for (i = 0; i < 12; i++) ok += patch_call_to(add[i], 0x005775d0, (void *)MyAddTopic);
     for (i = 0; i < 4; i++) ok += patch_call_to(talk[i], 0x00571660, (void *)MyAddTopicTalk);
-    if (ok != 29) logf("keyword patch: only %d of 29 sites", ok);
+    ok += patch_call_to(0x005742f4, 0x00402920, (void *)MyYesCmp);
+    if (ok != 30) logf("keyword patch: only %d of 30 sites", ok);
 }
 
 /* NSF loader 0x55a140: the narrow copy of a line is malloc(len + 1) ("and eax,0xffff; inc eax; push eax"
