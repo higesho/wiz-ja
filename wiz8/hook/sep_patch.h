@@ -65,8 +65,9 @@ static void patch_separators(void)
     if (!cave) { logf("separator patch: no memory"); return; }
     for (i = 0; i < (int)(sizeof(g_sep_sites) / sizeof(g_sep_sites[0])); i++) {
         const SepSite *s = &g_sep_sites[i];
-        BYTE *site = (BYTE *)s->site, *stub = p;
+        BYTE *site = (BYTE *)A(s->site), *stub = p;
         DWORD prot;
+        if (!site) continue;
         if (memcmp(site, s->expect, s->span) != 0) { logf("separator site %08x: unexpected bytes, skipped", s->site); continue; }
         for (j = 0; s->ops[j].op != OP_END; j++) {
             const SepOp *o = &s->ops[j];
@@ -76,14 +77,14 @@ static void patch_separators(void)
             case OP_CMP_EDX:       p = emit_sepcmp(p, "\x66\x83\x3a\x20", 4, "\x66\x81\x3a\x00\xe0", 5); break;
             case OP_CMP_EAX_EDI2:  p = emit_sepcmp(p, "\x66\x83\x3c\x78\x20", 5, "\x66\x81\x3c\x78\x00\xe0", 6); break;
             case OP_RAW:           p = emit(p, o->raw, o->rawlen); break;
-            case OP_JE:            p = emit_rel32(p, "\x0f\x84", 2, o->arg); break;
-            case OP_JNE:           p = emit_rel32(p, "\x0f\x85", 2, o->arg); break;
-            case OP_JMP:           p = emit_rel32(p, "\xe9", 1, o->arg); break;
+            case OP_JE:            p = emit_rel32(p, "\x0f\x84", 2, A(o->arg)); break;
+            case OP_JNE:           p = emit_rel32(p, "\x0f\x85", 2, A(o->arg)); break;
+            case OP_JMP:           p = emit_rel32(p, "\xe9", 1, A(o->arg)); break;
             }
         }
         if (!VirtualProtect(site, s->span, PAGE_EXECUTE_READWRITE, &prot)) continue;
         site[0] = 0xe9;
-        *(LONG *)(site + 1) = (LONG)((DWORD)stub - (s->site + 5));
+        *(LONG *)(site + 1) = (LONG)((DWORD)stub - ((DWORD)site + 5));
         for (j = 5; j < s->span; j++) site[j] = 0x90;
         VirtualProtect(site, s->span, prot, &prot);
         FlushInstructionCache(GetCurrentProcess(), site, s->span);
@@ -109,9 +110,10 @@ static void patch_word_spaces(void)
     int i, ok = 0;
     if (!cave) return;
     for (i = 0; i < (int)(sizeof(g_space_sites) / sizeof(g_space_sites[0])); i++) {
-        BYTE *site = (BYTE *)g_space_sites[i].site, *stub = p, *jne;
-        DWORD back = g_space_sites[i].site + 5, prot;
+        BYTE *site = (BYTE *)A(g_space_sites[i].site), *stub = p, *jne;
+        DWORD back = (DWORD)site + 5, prot;
         BYTE mov_ptr[4];
+        if (!site) continue;
         if (memcmp(site, "\x66\xc7\x07\x20\x00", 5) != 0) { logf("space site %08x: unexpected bytes, skipped", g_space_sites[i].site); continue; }
         p = emit(p, "\x9c\x50", 2);                                   /* pushfd; push eax */
         mov_ptr[0] = 0x8b; mov_ptr[1] = 0x44; mov_ptr[2] = 0x24; mov_ptr[3] = (BYTE)(g_space_sites[i].off + 8);
@@ -127,7 +129,7 @@ static void patch_word_spaces(void)
         p = emit_rel32(p, "\xe9", 1, back);
         if (!VirtualProtect(site, 5, PAGE_EXECUTE_READWRITE, &prot)) continue;
         site[0] = 0xe9;
-        *(LONG *)(site + 1) = (LONG)((DWORD)stub - (g_space_sites[i].site + 5));
+        *(LONG *)(site + 1) = (LONG)((DWORD)stub - ((DWORD)site + 5));
         VirtualProtect(site, 5, prot, &prot);
         FlushInstructionCache(GetCurrentProcess(), site, 5);
         ok++;

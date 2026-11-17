@@ -53,18 +53,30 @@ def main():
         for n, o, l, st in read_slf(lib)[1]:
             src[n.upper()] = (lib, o, l)
     patch = {}
-    bad = 0
-    for name, osz, crc, nsz, ops in read_dat(OUT_DAT):
-        lib, o, l = src[name.upper()]
+    bad = other = 0
+    entries = read_dat(OUT_DAT)
+    names = {}
+    for e in entries:
+        names.setdefault(e[0].upper(), []).append(e)
+    for key, group in names.items():
+        # a name can have several scripts, one per known original (Steam, Fan Patch 1.28): check the Steam one
+        if key not in src:
+            other += len(group); continue
+        lib, o, l = src[key]
         with open(lib, 'rb') as f:
             f.seek(o)
             orig = f.read(l)
-        if len(orig) != osz or zlib.crc32(orig) & 0xffffffff != crc:
-            print('ORIGINAL DIFFERS', name); bad += 1; continue
+        crc0 = zlib.crc32(orig) & 0xffffffff
+        match = [e for e in group if e[1] == len(orig) and e[2] == crc0]
+        other += len(group) - len(match)
+        if not match:
+            print('ORIGINAL DIFFERS', group[0][0]); bad += 1; continue
+        name, osz, crc, nsz, ops = match[0]
         new = apply_ops(orig, ops)
         if len(new) != nsz:
             print('SIZE', name); bad += 1; continue
-        patch[name.upper()] = new
+        patch[key] = new
+    print('%d scripts for other game versions (Fan Patch 1.28) not checked here' % other)
     kinds = files_by_kind()
     checked = 0
     for name, (kind, path) in sorted(kinds.items()):

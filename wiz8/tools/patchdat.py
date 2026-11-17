@@ -10,6 +10,10 @@ File layout (little endian):
             u32 orig_size, u32 orig_crc32, u32 new_size, u32 op_count
             ops: u8 0, u32 offset, u32 length   (copy from the original)
                  u8 1, u32 length, bytes         (insert)
+Names starting with '@' are not game files but data for the hook, one insert op each:
+  @pack\<id>          a Japanese glyph pack (glyphpack.py)
+  @glyphs\<font name> the id of the pack for that font; orig_size / orig_crc32 = the font it was made from
+                      (several per font: the hook prefers the one made from the font it reads)
 """
 import struct, zlib
 
@@ -60,12 +64,18 @@ def write(path, entries):
     """entries: list of (name, orig_bytes, new_bytes). Returns stats."""
     out = bytearray(b'W8JP' + struct.pack('<II', 1, len(entries)))
     stats = dict(files=0, copy=0, insert=0)
-    for name, orig, new in entries:
-        ops = delta(orig, new)
-        assert apply(orig, ops) == new, name
+    for e in entries:
+        name, orig, new = e[:3]
+        if name.startswith('@'):      # data for the hook: (name, (orig_size, orig_crc) or None, payload)
+            osz, ocrc = orig or (0, 0)
+            ops = [(1, new)]
+        else:
+            osz, ocrc = len(orig), zlib.crc32(orig) & 0xffffffff
+            ops = delta(orig, new)
+            assert apply(orig, ops) == new, name
         nb = name.lower().encode('latin1')
         out += struct.pack('<H', len(nb)) + nb
-        out += struct.pack('<IIII', len(orig), zlib.crc32(orig) & 0xffffffff, len(new), len(ops))
+        out += struct.pack('<IIII', osz, ocrc, len(new), len(ops))
         for op in ops:
             if op[0] == 0:
                 out += struct.pack('<BII', 0, op[1], op[2]); stats['copy'] += op[2]

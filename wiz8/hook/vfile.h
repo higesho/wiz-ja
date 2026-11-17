@@ -7,7 +7,9 @@
    (handle = library id << 22 | file id). When the game opens a file that has a script, MyFileOpen reads
    the original through the real functions, checks its size and CRC-32, builds the Japanese version (cached)
    and returns a handle of our own (library id 0x3f0) that the other hooked functions serve from memory.
-   A file whose original does not match (another game version) is left in English, with one log line. */
+   A file whose original does not match (another game version) is left in English, with one log line.
+   A name can have several scripts, one per known original (the Fan Patch 1.28 ships its own fonts in
+   Data\FanPatch.Dat): the one whose size and CRC match is used. */
 
 #define FM_OPEN   0x00404c80u
 #define FM_CLOSE  0x00404e10u
@@ -79,40 +81,171 @@ static void norm_name(const char *in, char *out, int cap)
     if (strncmp(out, "data\\", 5) == 0) memmove(out, out + 5, strlen(out + 5) + 1);
 }
 
-static DatFile *find_dat(const char *name)
+/* the first entry with this key; *count = how many there are (consecutive) */
+static DatFile *find_key(const char *n, int *count)
 {
-    char n[MAX_PATH];
     int lo = 0, hi = g_ndf - 1;
-    norm_name(name, n, sizeof(n));
     while (lo <= hi) {                     /* g_df is sorted by name (build_patch.py writes it sorted) */
         int m = (lo + hi) / 2, c = strcmp(n, g_df[m].name);
-        if (!c) return &g_df[m];
+        if (!c) {
+            int a = m, b = m;
+            while (a > 0 && !strcmp(g_df[a - 1].name, n)) a--;
+            while (b + 1 < g_ndf && !strcmp(g_df[b + 1].name, n)) b++;
+            *count = b - a + 1;
+            return &g_df[a];
+        }
         if (c < 0) hi = m - 1; else lo = m + 1;
     }
     return NULL;
 }
 
-/* read the original through the game's own functions and apply the script */
-static int build_file(DatFile *f, const char *name, DWORD flags, DWORD del)
+/* the first script for this game file; *count = how many there are */
+static DatFile *find_dat(const char *name, int *count)
 {
-    DWORD h, got = 0, i, pos = 0;
-    BYTE *orig, *out;
-    const BYTE *p = f->ops;
-    h = t_FileOpen(name, flags, del);
-    if (!h) return 0;
-    orig = (BYTE *)malloc(f->osize ? f->osize : 1);
-    if (!orig) { t_FileClose(h); return 0; }
-    if (t_FileGetSize(h) != f->osize || !t_FileRead(h, orig, f->osize, &got) || got != f->osize
-        || crc32_buf(orig, f->osize) != f->ocrc) {
-        t_FileClose(h);
-        free(orig);
-        f->bad = 1;
-        logf("%s: the game file differs from the one the translation was made for; left in English", f->name);
-        return 0;
+    char n[MAX_PATH];
+    norm_name(name, n, sizeof(n));
+    return find_key(n, count);
+}
+
+/* the data of an '@' entry (one insert op) */
+static const BYTE *payload(const DatFile *f, DWORD *len)
+{
+    if (f->nops != 1 || f->ops[0] != 1) return NULL;
+    *len = *(const DWORD *)(f->ops + 1);
+    return f->ops + 5;
+}
+
+/* ---- Fonts: the Japanese glyphs are appended to whatever version of a font the game reads ----
+   wiz8jp.dat holds glyph packs (@pack\<id>, tools/glyphpack.py) and, per font name, the pack to use
+   (@glyphs\<font>, one per known original; the one made from the font being read is preferred, else the
+   first). graft_font keeps sub-images 0..251 of the font (blank 1x1 glyphs if it has fewer), then appends
+   the pack: for the original a pack was made from, the result is the font mkfont.add_japanese builds. */
+#define BASE_GLYPHS 252
+static BYTE *graft_font(const BYTE *d, DWORD size, const BYTE *pack, DWORD plen, DWORD *outsize)
+{
+    DWORD stored, flags, ncol, app, base, i, off = 0, n, q, keep, total, pos;
+    WORD nsub;
+    BYTE *out, *h;
+    static const BYTE pad[2] = { 0x81, 0x00 };
+    if (size < 64 || memcmp(d, "STCI", 4) || plen < 4) return NULL;
+    stored = *(const DWORD *)(d + 8); flags = *(const DWORD *)(d + 16);
+    ncol = *(const DWORD *)(d + 24); nsub = *(const WORD *)(d + 28); app = *(const DWORD *)(d + 48);
+    if (!(flags & 0x08) || !(flags & 0x20) || ncol > 256) return NULL;
+    base = 64 + ncol * 3 + nsub * 16;
+    if (base > size || base + stored + app > size) return NULL;
+    n = *(const DWORD *)pack;
+    if (4 + n * 12 > plen) return NULL;
+    keep = nsub < BASE_GLYPHS ? nsub : BASE_GLYPHS;
+    total = 0;
+    for (i = 0; i < keep; i++) {
+        const BYTE *e = d + 64 + ncol * 3 + i * 16;
+        if (*(const DWORD *)e + *(const DWORD *)(e + 4) > stored) return NULL;
+        total += *(const DWORD *)(e + 4);
     }
+    total += (BASE_GLYPHS - keep) * 2 + (plen - 4 - n * 12);
+    *outsize = 64 + ncol * 3 + (BASE_GLYPHS + n) * 16 + total + app;
+    out = (BYTE *)malloc(*outsize);
+    if (!out) return NULL;
+    memcpy(out, d, 64 + ncol * 3);                          /* header, palette */
+    h = out + 64 + ncol * 3;                                /* sub-image headers */
+    pos = 64 + ncol * 3 + (BASE_GLYPHS + n) * 16;           /* pixel data */
+    for (i = 0; i < BASE_GLYPHS; i++, h += 16) {
+        DWORD len;
+        if (i < keep) {
+            const BYTE *e = d + 64 + ncol * 3 + i * 16;
+            len = *(const DWORD *)(e + 4);
+            memcpy(h, e, 16);
+            memcpy(out + pos, d + base + *(const DWORD *)e, len);
+        } else {
+            len = 2;
+            memset(h, 0, 16);
+            *(WORD *)(h + 12) = 1; *(WORD *)(h + 14) = 1;   /* h = 1, w = 1 */
+            memcpy(out + pos, pad, 2);
+        }
+        *(DWORD *)h = off; *(DWORD *)(h + 4) = len;
+        off += len; pos += len;
+    }
+    q = 4 + n * 12;
+    for (i = 0; i < n; i++, h += 16) {
+        const BYTE *e = pack + 4 + i * 12;                  /* i16 offx, i16 offy, u16 h, u16 w, u32 len */
+        DWORD len = *(const DWORD *)(e + 8);
+        if (q + len > plen) { free(out); return NULL; }
+        *(DWORD *)h = off; *(DWORD *)(h + 4) = len;
+        memcpy(h + 8, e, 8);
+        memcpy(out + pos, pack + q, len);
+        off += len; pos += len; q += len;
+    }
+    memcpy(out + pos, d + base + stored, app);              /* app data */
+    *(DWORD *)(out + 8) = off;
+    *(WORD *)(out + 28) = (WORD)(BASE_GLYPHS + n);
+    return out;
+}
+
+/* g: the n @glyphs entries for this font. Reads the font, appends the pack; the result is kept in the entry */
+static DatFile *build_font(DatFile *g, int nalt, const char *name, DWORD flags, DWORD del, FileOpen_t open)
+{
+    DWORD h, got = 0, size, crc, plen, idlen, outsize;
+    BYTE *orig, *out;
+    const BYTE *id, *pack;
+    char key[96];
+    DatFile *f = g, *pk;
+    int k, np;
+    h = open(name, flags, del);
+    if (!h) return NULL;
+    size = t_FileGetSize(h);
+    orig = (BYTE *)malloc(size ? size : 1);
+    if (!orig) { t_FileClose(h); return NULL; }
+    if (!t_FileRead(h, orig, size, &got) || got != size) { t_FileClose(h); free(orig); return NULL; }
     t_FileClose(h);
+    crc = crc32_buf(orig, size);
+    for (k = 0; k < nalt; k++)
+        if (g[k].osize == size && g[k].ocrc == crc) { f = &g[k]; break; }
+    id = payload(f, &idlen);
+    if (!id || idlen >= sizeof(key)) { free(orig); return NULL; }
+    memcpy(key, id, idlen); key[idlen] = 0;
+    pk = find_key(key, &np);
+    pack = pk ? payload(pk, &plen) : NULL;
+    out = pack ? graft_font(orig, size, pack, plen, &outsize) : NULL;
+    free(orig);
+    if (!out) {
+        for (k = 0; k < nalt; k++) g[k].bad = 1;
+        logf("%s: the Japanese glyphs could not be added to this font", g->name);
+        return NULL;
+    }
+    if (k == nalt) dlog("%s: glyphs added to a font version made for another one", g->name);
+    f->built = out;
+    f->nsize = outsize;
+    return f;
+}
+
+/* read the original through the game's own functions and apply the script made for it.
+   g is the first of the n scripts for this name; returns the one that was built, or NULL */
+static DatFile *build_file(DatFile *g, int nalt, const char *name, DWORD flags, DWORD del, FileOpen_t open)
+{
+    DWORD h, got = 0, i, pos = 0, size, crc;
+    BYTE *orig, *out;
+    const BYTE *p;
+    DatFile *f = NULL;
+    int k;
+    h = open(name, flags, del);
+    if (!h) return NULL;
+    size = t_FileGetSize(h);
+    orig = (BYTE *)malloc(size ? size : 1);
+    if (!orig) { t_FileClose(h); return NULL; }
+    if (!t_FileRead(h, orig, size, &got) || got != size) { t_FileClose(h); free(orig); return NULL; }
+    t_FileClose(h);
+    crc = crc32_buf(orig, size);
+    for (k = 0; k < nalt; k++)
+        if (g[k].osize == size && g[k].ocrc == crc) { f = &g[k]; break; }
+    if (!f) {
+        free(orig);
+        for (k = 0; k < nalt; k++) g[k].bad = 1;
+        logf("%s: the game file differs from the one the translation was made for; left in English", g->name);
+        return NULL;
+    }
+    p = f->ops;
     out = (BYTE *)malloc(f->nsize ? f->nsize : 1);
-    if (!out) { free(orig); return 0; }
+    if (!out) { free(orig); return NULL; }
     for (i = 0; i < f->nops; i++) {
         DWORD a, b;
         if (*p++ == 0) {
@@ -129,12 +262,12 @@ static int build_file(DatFile *f, const char *name, DWORD flags, DWORD del)
     free(orig);
     if (i != f->nops || pos != f->nsize) {
         free(out);
-        f->bad = 1;
+        for (k = 0; k < nalt; k++) g[k].bad = 1;
         logf("%s: wiz8jp.dat is damaged; left in English", f->name);
-        return 0;
+        return NULL;
     }
     f->built = out;
-    return 1;
+    return f;
 }
 
 static VHandle *vh_of(DWORD h)
@@ -144,16 +277,32 @@ static VHandle *vh_of(DWORD h)
     return &g_vh[i];
 }
 
-static DWORD __cdecl MyFileOpen(const char *name, DWORD flags, DWORD del)
+/* open: the function that really opens the file (the game's FileOpen, or the Fan Patch's copy of it) */
+static DWORD vopen(const char *name, DWORD flags, DWORD del, FileOpen_t open)
 {
-    DatFile *f;
+    DatFile *g = NULL, *f = NULL;
     DWORD r = 0;
-    int i;
-    /* read-only opens (FILE_ACCESS_READ = 1, no write bit 2) of files we have a script for */
-    if (!g_ndf || !name || (flags & 3) != 1 || !(f = find_dat(name)) || f->bad)
-        return t_FileOpen(name, flags, del);
+    int i, n = 0, font = 0;
+    char key[MAX_PATH + 16];
+    /* read-only opens (FILE_ACCESS_READ = 1, no write bit 2) of files we have a script or glyphs for */
+    if (g_ndf && name && (flags & 3) == 1) {
+        g = find_dat(name, &n);
+        if (!g) {
+            strcpy(key, "@glyphs\\");
+            norm_name(name, key + 8, MAX_PATH);
+            g = find_key(key, &n);
+            font = 1;
+        }
+    }
+    if (!g || g->bad) {
+#ifdef JP_DEBUG_FILES
+        dlog("open (as is) %s flags %x", name ? name : "(null)", flags);
+#endif
+        return open(name, flags, del);
+    }
     EnterCriticalSection(&g_vcs);
-    if (f->built || build_file(f, name, flags, del)) {
+    for (i = 0; i < n; i++) if (g[i].built) f = &g[i];
+    if (f || (f = (font ? build_font : build_file)(g, n, name, flags, del, open)) != NULL) {
         for (i = 0; i < VF_MAX && g_vh[i].used; i++) ;
         if (i < VF_MAX) {
             g_vh[i].used = 1; g_vh[i].f = f; g_vh[i].pos = 0;
@@ -161,9 +310,43 @@ static DWORD __cdecl MyFileOpen(const char *name, DWORD flags, DWORD del)
         } else logf("too many open translated files");
     }
     LeaveCriticalSection(&g_vcs);
-    if (!r) r = t_FileOpen(name, flags, del);
+    if (!r) r = open(name, flags, del);
     else dlog("vfile open %s", name);
     return r;
+}
+
+/* Fan Patch 1.28: its CFAgent redirects about two dozen FileOpen calls (NPC scripts, messages, quotes ...)
+   to its own copy of FileOpen (Unicode file names), which our hook at the start of FileOpen never sees.
+   Once that has happened (it is done at start-up, after this DLL is loaded), hook the copy as well.
+   The NPC script loader's call (0x55a48e) tells where it is. */
+static FileOpen_t t_AltOpen;
+static LONG g_alt_state;          /* 0 = not yet, 1 = done (or given up) */
+static void *inline_hook(DWORD at, const char *expect, int n, void *fn);
+
+static DWORD __cdecl MyAltOpen(const char *name, DWORD flags, DWORD del)
+{
+    return vopen(name, flags, del, t_AltOpen);
+}
+
+static void try_hook_alt_open(void)
+{
+    BYTE *p;
+    DWORD t;
+    if (!g_fanpatch || g_alt_state) return;
+    p = (BYTE *)A(0x0055a48eu);
+    if (!p || p[0] != 0xe8) { g_alt_state = 1; return; }
+    t = (DWORD)p + 5 + *(LONG *)(p + 1);
+    if (t == A(FM_OPEN)) return;                   /* not redirected yet */
+    if (InterlockedExchange(&g_alt_state, 1)) return;
+    t_AltOpen = (FileOpen_t)inline_hook(t, "\x81\xec\x08\x04\x00\x00", 6, (void *)MyAltOpen);
+    if (!t_AltOpen) logf("Fan Patch file open at %08x not hooked: NPC dialogue stays in English", t);
+    else dlog("Fan Patch file open at %08x hooked", t);
+}
+
+static DWORD __cdecl MyFileOpen(const char *name, DWORD flags, DWORD del)
+{
+    try_hook_alt_open();
+    return vopen(name, flags, del, t_FileOpen);
 }
 
 static void __cdecl MyFileClose(DWORD h)
@@ -234,9 +417,12 @@ static BYTE __cdecl MyFileTime(DWORD h, void *c, void *a, void *w)
 /* jump from the start of a game function to fn; returns a trampoline that runs the original */
 static void *inline_hook(DWORD at, const char *expect, int n, void *fn)
 {
-    BYTE *p = (BYTE *)at, *t;
+    BYTE *p, *t;
     DWORD prot;
     int i;
+    at = A(at);
+    if (!at) return NULL;
+    p = (BYTE *)at;
     if (memcmp(p, expect, n) != 0) { logf("hook at %08x: unexpected bytes, skipped", at); return NULL; }
     t = (BYTE *)VirtualAlloc(NULL, 32, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
     if (!t) return NULL;
@@ -295,8 +481,21 @@ static int load_dat(void)
     return 1;
 }
 
+#ifdef JP_DEBUG_FILES
+typedef int (__cdecl *nsfload_t)(const char *, void *);
+static nsfload_t t_NsfLoad;
+static int __cdecl MyNsfLoad(const char *name, void *a2)
+{
+    dlog("NSF load %s", name ? name : "(null)");
+    return t_NsfLoad(name, a2);
+}
+#endif
+
 static void vfile_init(void)
 {
+#ifdef JP_DEBUG_FILES
+    t_NsfLoad = (nsfload_t)inline_hook(0x0055a480u, "\x51\x8b\x44\x24\x08", 5, (void *)MyNsfLoad);
+#endif
     InitializeCriticalSection(&g_vcs);
     if (!load_dat()) return;
     t_FileOpen    = (FileOpen_t)inline_hook(FM_OPEN, "\x81\xec\x08\x04\x00\x00", 6, (void *)MyFileOpen);

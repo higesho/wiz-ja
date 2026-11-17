@@ -43,7 +43,8 @@ SHOTS7 = [
     ('dos.png', 'DOS 版', 'DOS 版で店の主人に会った画面'),
 ]
 
-RELEASE8 = REPO + '/releases/tag/wiz8-v1.0.5'
+RELEASE8 = REPO + '/releases/tag/wiz8-v1.1'
+FANPATCH8 = 'https://mods.rpghq.org/wizardry-8/350301'
 ZIP8 = 'Wizardry8_JP.zip'
 # ウィザードリィ8 の日本語化の本体は ../../Wizardry8/JPMod（配布物は JPMod/release/Wizardry8_JP.zip）
 SHOTS8 = [
@@ -93,8 +94,9 @@ def head(title, desc, url, og_type, og_image, css):
 
 
 def header(prefix, here):
-    return ('<header class="top"><div class="band">\n  <a class="brand" href="%sindex.html">ウィザードリィ 日本語化</a>\n'
-            '  <nav>\n    %s\n  </nav>\n</div></header>\n' % (prefix, nav(prefix, here)))
+    # the header shared by the Japanese localization projects (https://higesho.github.io/ja/nav.js, since 2026-11-15)
+    return ('<header class="jpn" id="jpn"><div class="jpn-band"><a class="jpn-home" href="https://higesho.github.io/ja/">日本語化プロジェクト</a></div></header>\n'
+            '<script src="https://higesho.github.io/ja/nav.js"></script>\n')
 
 
 FOOTER = ('<footer class="foot"><div class="band">\n'
@@ -372,7 +374,8 @@ def wiz8_page(shots, talk):
 <p class="tag">Steam 版の「Wizardry 8」を日本語で遊べるようにする、非公式のファンメイドパッチです。
 物語や住人たちとの会話、メニューと各画面、戦闘の文言、日誌、品物・怪物・人物・呪文・技能の名前と説明まで日本語にしています。
 動画（オープニング、各陣営の導入、エンディング）には日本語の字幕を付けました。
-ゲームのフォルダにファイルを置くだけで日本語になります。元のゲームのファイルは書き換えません。</p>
+ゲームのフォルダにファイルを置くだけで日本語になります。元のゲームのファイルは書き換えません。
+有志によるファンパッチ 1.28 と一緒にも使えます（<a href="#fanpatch">ファンパッチと一緒に使う</a>）。</p>
 <p><a class="dl" href="@RELEASE@">ダウンロード（GitHub）</a></p>
 </section>
 
@@ -392,6 +395,22 @@ def wiz8_page(shots, talk):
 </ol>
 <p>ゲームのフォルダは、Steam でゲームを右クリック → 管理 → ローカルファイルを閲覧、で開く場所です（<code>Wiz8.exe</code>・<code>Data</code> フォルダがある場所）。</p>
 
+<h2 id="fanpatch">ファンパッチ 1.28 と一緒に使う</h2>
+<p>有志によるファンパッチ「<a href="@FANPATCH@">Wizardry 8 Fan Patch 1.28</a>」（myoffice91 氏作。原作の不具合の修正、7 人パーティ、ワイドスクリーン対応、ホットキー、高速化など）と一緒に使えます。
+ファンパッチは <a href="@FANPATCH@">ModHQ の配布ページ</a> から入手できます（英語。原作者の解説は同梱の <code>Patch128_README</code> にあります）。</p>
+<ol>
+<li>ファンパッチを、その説明どおりにゲームのフォルダに入れます（ダウンロードした 7z を展開し、中身をゲームのフォルダに上書きでコピー）。</li>
+<li>この日本語化の <code>ddraw.dll</code>・<code>wiz8jp.dat</code>・<code>wiz8jp.chr</code>・<code>wiz8jp.sub</code> の 4 つを、同じフォルダにコピーします。</li>
+<li>ファンパッチの起動方法どおり、<code>Wiz8_v128.exe</code> から起動します。初めて起動したときの言語の選択では <strong>English</strong> を選んでください。</li>
+</ol>
+<ul>
+<li>ファンパッチの build 6709 と、そのベータ版 build 6719 で動作を確認しています。日本語化は起動のたびに、書き換える場所をゲームの exe の中から探すので、ファンパッチが更新されても多くの場合はそのまま動きます（見つからなかった所は英語のまま動きます）。</li>
+<li>ファンパッチが追加した画面や文言（ランチャー、追加の設定ページ、ファンパッチ独自のメッセージ）は英語のままです。</li>
+<li>ファンパッチの言語を English 以外（Polish など）にした場合は確認していません。</li>
+<li>動画はファンパッチの再生のしかたで流れ、日本語の字幕はそこに重ねて表示します。</li>
+<li>ファンパッチの設定や推奨（新しく始めることなど）は、ファンパッチの説明に従ってください。ファンパッチについての質問は、ファンパッチの配布元へお願いします。</li>
+</ul>
+
 <h2>外し方</h2>
 <ul>
 <li>置いた 4 つのファイル（<code>ddraw.dll</code>・<code>wiz8jp.dat</code>・<code>wiz8jp.chr</code>・<code>wiz8jp.sub</code>）を削除すると、元の英語版に戻ります。元のファイルは書き換えていないので、整合性の確認も要りません。</li>
@@ -401,7 +420,8 @@ def wiz8_page(shots, talk):
 <h2>しくみ</h2>
 <p><code>ddraw.dll</code> をゲームのフォルダに置くと、ゲームが起動時に読み込みます（Windows の ddraw.dll への中継を兼ねています）。
 ゲームがデータを読み込むときに、<code>wiz8jp.dat</code> の訳文と日本語の字形を当てます。<code>wiz8jp.dat</code> は元のファイルとの差分で、
-元のファイルが Steam 版と違うときは、そのファイルは英語のまま表示します。</p>
+フォントは、ゲームが読んだフォント（版が違っても）に日本語の字形をその場で足します。
+訳文の元のファイルが Steam 版と違うときは、そのファイルは英語のまま表示します。</p>
 
 <h2>動画と字幕</h2>
 <p>元のゲーム（Steam 版）には、動画を再生する所で画面の準備に失敗し、動画が映らない・止まる不具合があります。
@@ -468,7 +488,7 @@ def wiz8_page(shots, talk):
 <li>ボタンなど、画像として描かれている文字は英語のままです。</li>
 <li>日誌は 1 件を 1 行で表示する作りのため、訳文を短くまとめています。</li>
 <li>文章は機械翻訳をもとにしています。不自然な訳や誤訳があるかもしれません。全場面の確認は終わっていません。</li>
-<li>Windows 11 の Steam 版（nGlide で描画）で動作を確認しています。ほかの版（GOG 版など）は確認していません。</li>
+<li>Windows 11 の Steam 版（nGlide で描画）と、それにファンパッチ 1.28 を入れたもので動作を確認しています。ほかの版（GOG 版など）は確認していません。</li>
 <li>ほかに <code>ddraw.dll</code> を使う MOD やツール（画面のラッパーなど）とは同時に使えません。</li>
 </ul>
 
@@ -483,7 +503,7 @@ def wiz8_page(shots, talk):
 </div>
 </main>
 """
-    for k, v in (('@RELEASE@', RELEASE8), ('@ZIP@', ZIP8), ('@REPO@', REPO), ('@SHOTS@', shots_html), ('@TALK@', talk_html)):
+    for k, v in (('@RELEASE@', RELEASE8), ('@ZIP@', ZIP8), ('@REPO@', REPO), ('@FANPATCH@', FANPATCH8), ('@SHOTS@', shots_html), ('@TALK@', talk_html)):
         body = body.replace(k, v)
     return s + body + '\n' + FOOTER
 

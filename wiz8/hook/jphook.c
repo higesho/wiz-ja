@@ -58,6 +58,8 @@ static void logf(const char *fmt, ...)
     fclose(f);
 }
 
+#include "resolve.h"
+
 static void load_chars(void)
 {
     char path[MAX_PATH];
@@ -91,7 +93,7 @@ static void set_cp932_locale(void)
 
 static FontTransTable *__cdecl MyCreateTable(void)
 {
-    FontTransTable *t = ((CreateTable_t)ADDR_CREATE_TABLE)();
+    FontTransTable *t = ((CreateTable_t)A(ADDR_CREATE_TABLE))();
     HMODULE crt;
     malloc_t pmalloc;
     free_t pfree;
@@ -124,8 +126,11 @@ static FontTransTable *__cdecl MyCreateTable(void)
 
 static BOOL patch_call(DWORD at, void *target, DWORD expect_old)
 {
-    BYTE *p = (BYTE *)at;
+    BYTE *p;
     DWORD old, prot;
+    at = A(at); expect_old = A(expect_old);
+    if (!at || !expect_old) return FALSE;
+    p = (BYTE *)at;
     if (p[0] != 0xE8) { logf("no call at %08x", at); return FALSE; }
     old = at + 5 + *(LONG *)(p + 1);
     if (old != expect_old) { logf("call at %08x goes to %08x, expected %08x", at, old, expect_old); return FALSE; }
@@ -148,11 +153,13 @@ typedef void *(__stdcall *PFN_BinkOpen)(const char *, unsigned int);
 static PFN_BinkDDSurfaceType o_BinkDDSurfaceType;
 static PFN_BinkOpen          o_BinkOpen;
 
-static int iat_hook(DWORD slot, void *fn, void **orig)
+/* the slot must hold binkw32.dll's `name` (so an unknown exe is never written to at a wrong place) */
+static int iat_hook(DWORD slot, const char *name, void *fn, void **orig)
 {
     DWORD prot;
-    void **p = (void **)slot;
-    if (!*p) return 0;
+    void **p = (void **)A(slot);
+    HMODULE bink = GetModuleHandleA("binkw32.dll");
+    if (!p || !bink || !*p || *p != (void *)GetProcAddress(bink, name)) return 0;
     *orig = *p;
     if (!VirtualProtect(p, 4, PAGE_READWRITE, &prot)) return 0;
     *p = fn;
@@ -184,9 +191,10 @@ static void widen_format_spaces(void)
 {
     int i, n = 0;
     for (i = 0; i < (int)(sizeof(g_fmt_va) / sizeof(g_fmt_va[0])); i++) {
-        WCHAR *p = (WCHAR *)g_fmt_va[i];
+        WCHAR *p = (WCHAR *)A(g_fmt_va[i]);
         DWORD prot;
         int k, len = 0;
+        if (!p) continue;
         while (len < 80 && p[len]) len++;
         if (len == 0 || len >= 80) { logf("format string at %08x looks wrong, skipped", g_fmt_va[i]); continue; }
         if (!VirtualProtect(p, len * 2, PAGE_READWRITE, &prot)) continue;
@@ -211,9 +219,9 @@ static void patch_skillup_spaces(void)
     static const DWORD sites[] = { 0x00554237, 0x00554252 };
     int i, ok = 0;
     for (i = 0; i < 2; i++) {
-        BYTE *p = (BYTE *)sites[i];
+        BYTE *p = (BYTE *)A(sites[i]);
         DWORD prot;
-        if (memcmp(p, "\x66\xc7\x04\x47\x20\x00", 6) != 0) continue;
+        if (!p || memcmp(p, "\x66\xc7\x04\x47\x20\x00", 6) != 0) continue;
         if (!VirtualProtect(p, 6, PAGE_EXECUTE_READWRITE, &prot)) continue;
         *(WORD *)(p + 4) = 0xE000;
         VirtualProtect(p, 6, prot, &prot);
@@ -226,9 +234,10 @@ static void replace_words(void)
 {
     int i;
     for (i = 0; i < (int)(sizeof(g_words) / sizeof(g_words[0])); i++) {
-        WCHAR *p = (WCHAR *)g_words[i].va;
+        WCHAR *p = (WCHAR *)A(g_words[i].va);
         size_t n = wcslen(g_words[i].old), m = wcslen(g_words[i].rep);
         DWORD prot;
+        if (!p) continue;    /* the Fan Patch exe has its own text there */
         if (m > n || wcscmp(p, g_words[i].old) != 0) { logf("word at %08x not found, skipped", g_words[i].va); continue; }
         if (!VirtualProtect(p, (n + 1) * 2, PAGE_READWRITE, &prot)) continue;
         memcpy(p, g_words[i].rep, (m + 1) * 2);
@@ -251,9 +260,10 @@ static void patch_join_formats(void)
 {
     int i, ok = 0;
     for (i = 0; i < (int)(sizeof(g_join_sites) / sizeof(g_join_sites[0])); i++) {
-        BYTE *p = (BYTE *)g_join_sites[i].site;
+        BYTE *p = (BYTE *)A(g_join_sites[i].site);
         DWORD prot;
-        if (p[0] != 0x68 || *(DWORD *)(p + 1) != g_join_sites[i].oldfmt) { logf("join site %08x: unexpected bytes, skipped", g_join_sites[i].site); continue; }
+        if (!p || !A(g_join_sites[i].oldfmt)) continue;
+        if (p[0] != 0x68 || *(DWORD *)(p + 1) != A(g_join_sites[i].oldfmt)) { logf("join site %08x: unexpected bytes, skipped", g_join_sites[i].site); continue; }
         if (!VirtualProtect(p, 5, PAGE_EXECUTE_READWRITE, &prot)) continue;
         *(DWORD *)(p + 1) = (DWORD)g_join_sites[i].fmt;
         VirtualProtect(p, 5, prot, &prot);
@@ -269,7 +279,7 @@ static void patch_join_formats(void)
 typedef int (__cdecl *swprintf_t)(WCHAR *, const WCHAR *, ...);
 static int __cdecl MyPhraseFmt(WCHAR *buf, const WCHAR *fmt, const WCHAR *phrase, const WCHAR *word)
 {
-    swprintf_t sw = *(swprintf_t *)0x005eb188;   /* the game's MSVCRT swprintf (IAT) */
+    swprintf_t sw = *(swprintf_t *)A(0x005eb188);   /* the game's MSVCRT swprintf (IAT) */
     size_t n = wcslen(fmt);
     const WCHAR *end = (n && fmt[n - 1] == L'?') ? L"\xff1f" : (n && fmt[n - 1] == L'.') ? L"\x3002" : L"";
     return sw(buf, L"%s%s%s", word, phrase, end);
@@ -280,12 +290,13 @@ static void patch_phrase_order(void)
     static const DWORD sites[] = { 0x00574b0b, 0x00561653 };
     int i, ok = 0;
     for (i = 0; i < 2; i++) {
-        BYTE *p = (BYTE *)sites[i];
+        BYTE *p = (BYTE *)A(sites[i]);
         DWORD prot;
-        if (memcmp(p, "\xff\x15\x88\xb1\x5e\x00", 6) != 0) { logf("phrase site %08x: unexpected bytes, skipped", sites[i]); continue; }
+        if (!p) continue;
+        if (p[0] != 0xff || p[1] != 0x15 || *(DWORD *)(p + 2) != A(0x005eb188)) { logf("phrase site %08x: unexpected bytes, skipped", (DWORD)p); continue; }
         if (!VirtualProtect(p, 6, PAGE_EXECUTE_READWRITE, &prot)) continue;
         p[0] = 0xe8;
-        *(LONG *)(p + 1) = (LONG)((DWORD)MyPhraseFmt - (sites[i] + 5));
+        *(LONG *)(p + 1) = (LONG)((DWORD)MyPhraseFmt - ((DWORD)p + 5));
         p[5] = 0x90;
         VirtualProtect(p, 6, prot, &prot);
         FlushInstructionCache(GetCurrentProcess(), p, 6);
@@ -302,13 +313,13 @@ static void patch_phrase_order(void)
    entry + 5 and the level is entry + 0x89, so it is read from name + 0x84. */
 typedef void (__cdecl *drawtext_t)(int, int, const WCHAR *, ...);
 typedef short (__cdecl *textwidth_t)(void *font, int maxlen, const WCHAR *, ...);
-#define DRAWTEXT ((drawtext_t)0x00407650)
-#define TEXTWIDTH ((textwidth_t)0x00406ea0)   /* width in pixels; the roster font is [0x683660] */
+#define DRAWTEXT ((drawtext_t)A(0x00407650))
+#define TEXTWIDTH ((textwidth_t)A(0x00406ea0))   /* width in pixels; the roster font is [0x683660] */
 static void __cdecl MyRosterName(int x, int y, const WCHAR *fmt, const WCHAR *name)
 {
     /* the name font has no visible blank (U+0020 is zero width, U+2002 shows as 'A'), so the level is a
        second piece of text, right-aligned to the box edge (x + 99, in 640x480 game units) or just after a long name */
-    void *font = *(void **)0x00683660;
+    void *font = *(void **)A(0x00683660);
     int lv = *(const int *)((const BYTE *)name + 0x84);
     int wn = TEXTWIDTH(font, 64, L"%s", name), wl = TEXTWIDTH(font, 16, L"Lv%d", lv);
     int lx = x + 99 - wl;
@@ -329,11 +340,12 @@ static void patch_roster(void)
     };
     int i, ok = 0;
     for (i = 0; i < 2; i++) {
-        BYTE *p = (BYTE *)s[i].site;
+        BYTE *p = (BYTE *)A(s[i].site);
         DWORD prot;
-        if (p[0] != 0xe8 || (DWORD)(s[i].site + 5 + *(LONG *)(p + 1)) != 0x00407650) { logf("roster site %08x: unexpected bytes, skipped", s[i].site); continue; }
+        if (!p) continue;
+        if (p[0] != 0xe8 || (DWORD)((DWORD)p + 5 + *(LONG *)(p + 1)) != A(0x00407650)) { logf("roster site %08x: unexpected bytes, skipped", (DWORD)p); continue; }
         if (!VirtualProtect(p, 5, PAGE_EXECUTE_READWRITE, &prot)) continue;
-        *(LONG *)(p + 1) = (LONG)((DWORD)s[i].fn - (s[i].site + 5));
+        *(LONG *)(p + 1) = (LONG)((DWORD)s[i].fn - ((DWORD)p + 5));
         VirtualProtect(p, 5, prot, &prot);
         FlushInstructionCache(GetCurrentProcess(), p, 5);
         ok++;
@@ -354,8 +366,8 @@ static void patch_roster(void)
      word its Latin part (appended, as in the original). */
 typedef int (__cdecl *segword_t)(int pos, const WCHAR *s, short *rect);
 typedef void (__cdecl *wordclean_t)(WCHAR *);
-#define SEGWORD ((segword_t)0x0058fdd0)
-#define WORDCLEAN ((wordclean_t)0x00528f60)
+#define SEGWORD ((segword_t)A(0x0058fdd0))
+#define WORDCLEAN ((wordclean_t)A(0x00528f60))
 #define KW_MARK 0xe001
 
 static int kw_span_end(const WCHAR *s, int i)   /* index of the ')' closing the span that holds i, or -1 */
@@ -429,8 +441,11 @@ static void __cdecl MyWordClean(WCHAR *w)
 
 static int patch_call_to(DWORD site, DWORD target, void *fn)
 {
-    BYTE *p = (BYTE *)site;
+    BYTE *p;
     DWORD prot;
+    site = A(site); target = A(target);
+    if (!site || !target) return 0;
+    p = (BYTE *)site;
     if (p[0] != 0xe8 || (DWORD)(site + 5 + *(LONG *)(p + 1)) != target) { logf("call site %08x: unexpected bytes, skipped", site); return 0; }
     if (!VirtualProtect(p, 5, PAGE_EXECUTE_READWRITE, &prot)) return 0;
     *(LONG *)(p + 1) = (LONG)((DWORD)fn - (site + 5));
@@ -445,11 +460,11 @@ static int patch_call_to(DWORD site, DWORD target, void *fn)
 #define KW_DY 6
 static int __cdecl MyLogHover(int log, int x, int y)
 {
-    return ((int (__cdecl *)(int, int, int))0x00590250)(log, x, y + KW_DY);
+    return ((int (__cdecl *)(int, int, int))A(0x00590250))(log, x, y + KW_DY);
 }
 static int __cdecl MyLogHit(int log, int x, int y, int *out)
 {
-    return ((int (__cdecl *)(int, int, int, int *))0x00590410)(log, x, y + KW_DY, out);
+    return ((int (__cdecl *)(int, int, int, int *))A(0x00590410))(log, x, y + KW_DY, out);
 }
 
 /* Asking with Japanese words. The parser 0x5743b0 looks the player's words up with 0x525e80(text, o1, o2)
@@ -465,10 +480,10 @@ static int __cdecl MyLogHit(int log, int x, int y, int *out)
 #include "kw_table.h"
 typedef int (__cdecl *kwlookup_t)(const WCHAR *, void *, void *);
 typedef int (__cdecl *addtopic_t)(const WCHAR *, int);
-#define KWLOOKUP ((kwlookup_t)0x00525e80)
-#define ADDTOPIC ((addtopic_t)0x005775d0)
+#define KWLOOKUP ((kwlookup_t)A(0x00525e80))
+#define ADDTOPIC ((addtopic_t)A(0x005775d0))
 typedef int (__cdecl *addtopic_talk_t)(WCHAR *, int, int);
-#define ADDTOPIC_TALK ((addtopic_talk_t)0x00571660)
+#define ADDTOPIC_TALK ((addtopic_talk_t)A(0x00571660))
 #define KW_TOPIC_MAX 12   /* longest Japanese term (characters) shown in the topic list */
 
 /* text without break / span marks and without the punctuation the game's own clean-up (0x528f60) drops */
@@ -550,7 +565,7 @@ static int __cdecl MyKwLookup(const WCHAR *text, void *o1, void *o2)
 
 static int kw_topic_exists(const WCHAR *w)   /* is this word in the topic list ([0x649f1c] + 0x1e0 count, + 0x1e8 entries)? */
 {
-    BYTE *b = *(BYTE **)0x00649f1c;
+    BYTE *b = *(BYTE **)A(0x00649f1c);
     WCHAR a[120], k[120];
     WCHAR **arr;
     int n, i;
@@ -631,7 +646,7 @@ typedef int (__cdecl *wcmp_t)(const WCHAR *, const WCHAR *);
 static int __cdecl MyYesCmp(const WCHAR *in, const WCHAR *label)
 {
     WCHAR t[120];
-    int r = ((wcmp_t)0x00402920)(in, label);
+    int r = ((wcmp_t)A(0x00402920))(in, label);
     if (r == 0 || !in || wcslen(in) > 100) return r;
     kw_clean(in, t, 120);
     if (!_wcsicmp(t, L"yes") || !_wcsicmp(t, L"y") || !_wcsicmp(t, L"yeah") || !_wcsicmp(t, L"yep")) return 0;
@@ -663,7 +678,7 @@ static void patch_keyword_click(void)
    e.g. the goal of the Umpani obstacle course ("_Sgt. Rubble") fired and was used up without the event.
    Retry with the English name (g_npc_name, kw_table.h). The name arrives in CP932 (the CRT locale). */
 typedef void *(__cdecl *findtrig_t)(const char *);
-#define FINDTRIG ((findtrig_t)0x00443780)
+#define FINDTRIG ((findtrig_t)A(0x00443780))
 static void *__cdecl MyFindNpcTrigger(const char *name)
 {
     void *t = FINDTRIG(name);
@@ -697,7 +712,7 @@ static void patch_nsf_alloc(void)
     if (!cave) return;
     p = emit(p, "\x25\xff\xff\x00\x00", 5);      /* and eax, 0xffff */
     p = emit(p, "\x01\xc0", 2);                  /* add eax, eax */
-    p = emit_rel32(p, "\xe9", 1, 0x0055a1e8);   /* -> inc eax; push eax; call malloc */
+    p = emit_rel32(p, "\xe9", 1, A(0x0055a1e8));   /* -> inc eax; push eax; call malloc */
     FlushInstructionCache(GetCurrentProcess(), cave, p - cave);
     if (hook_jmp(0x0055a1e3, 5, "\x25\xff\xff\x00\x00", cave)) dlog("NSF line buffer: 2 * len + 1");
     else logf("NSF line buffer patch failed");
@@ -710,9 +725,9 @@ static void patch_nsf_alloc(void)
 static void patch_bubble_height(void)
 {
     {
-    BYTE *p = (BYTE *)0x005cfbab;
+    BYTE *p = (BYTE *)A(0x005cfbab);
     DWORD prot;
-    if (memcmp(p, "\x66\x81\xfe\xc8\x00", 5) != 0) { logf("bubble height: unexpected bytes, skipped"); return; }
+    if (!p || memcmp(p, "\x66\x81\xfe\xc8\x00", 5) != 0) { logf("bubble height: unexpected bytes, skipped"); return; }
     if (!VirtualProtect(p, 5, PAGE_EXECUTE_READWRITE, &prot)) return;
     *(WORD *)(p + 3) = 400;
     VirtualProtect(p, 5, prot, &prot);
@@ -735,8 +750,8 @@ static void patch_bubble_height(void)
 #define ADDR_ENTER_MOVIE  0x00423390u
 #define ADDR_LEAVE_MOVIE  0x004234a0u
 #define ADDR_DRAW_NOSURF  0x005e3070u
-#define G_SR              (*(void **)0x00659634u)
-#define G_PLAYER          (*(DWORD **)0x0069c258u)
+#define G_SR              (*(void **)A(0x00659634u))
+#define G_PLAYER          (*(DWORD **)A(0x0069c258u))
 
 enum { MOVIE_NORMAL, MOVIE_GLIDE, MOVIE_SKIP };
 typedef int  (__stdcall *grLfbWriteRegion_t)(int, unsigned, unsigned, int, unsigned, unsigned, int, void *);
@@ -764,7 +779,7 @@ static int glide_ready(void)
         p_grSstScreenHeight = (grSstScreen_t)GetProcAddress(g, "_grSstScreenHeight@0");
     }
     if (!p_BinkCopyToBuffer)
-        p_BinkCopyToBuffer = *(BinkCopyToBuffer_t *)IAT_BinkCopyToBuffer;
+        p_BinkCopyToBuffer = *(BinkCopyToBuffer_t *)A(IAT_BinkCopyToBuffer);
     return p_grLfbWriteRegion && p_grBufferSwap && p_grSstScreenWidth && p_grSstScreenHeight
         && p_BinkCopyToBuffer && !g_glide_fault;
 }
@@ -985,11 +1000,12 @@ static void draw_sub(void)
     }
 }
 
-static void movie_subtitle(const DWORD *bink)
+/* render the subtitle of the current frame if it changed; 1 = there is one to draw */
+static int movie_subtitle_render(const DWORD *bink)
 {
     DWORD rate = bink[5], div = bink[6], fn = bink[3] ? bink[3] - 1 : 0, t;
     int i, cur = -1;
-    if (g_sub_hi <= g_sub_lo) return;
+    if (g_sub_hi <= g_sub_lo) return 0;
     if (!rate || !div || rate / div > 120) { rate = 30; div = 1; }
     t = (DWORD)((unsigned __int64)fn * 1000 * div / rate);
     for (i = g_sub_lo; i < g_sub_hi; i++)
@@ -998,7 +1014,59 @@ static void movie_subtitle(const DWORD *bink)
         g_sub_shown = cur;
         if (cur >= 0) render_sub(g_subs[cur].text);
     }
-    if (cur >= 0 && g_sub_h) draw_sub();
+    return cur >= 0 && g_sub_h;
+}
+
+static void movie_subtitle(const DWORD *bink)
+{
+    if (movie_subtitle_render(bink)) draw_sub();
+}
+
+/* Fan Patch 1.28 plays the movies itself (DirectDraw); its frames still come through the game's
+   BinkCopyToBuffer import, so the subtitle is blended into each frame there (16-bit 565 / 555, 32-bit). */
+typedef int (__stdcall *PFN_BinkCopyToBuffer)(void *, void *, int, unsigned, unsigned, unsigned, unsigned);
+static PFN_BinkCopyToBuffer o_BinkCopyToBuffer;
+
+static int __stdcall MyBinkCopyToBuffer(void *b, void *dest, int pitch, unsigned height, unsigned x, unsigned y, unsigned flags)
+{
+    int r = o_BinkCopyToBuffer(b, dest, pitch, height, x, y, flags);
+    const DWORD *bink = (const DWORD *)b;
+    unsigned fmt = flags & 0xf, w, h, yy, xx, y0;
+    static int logged;
+    if (!logged++) dlog("BinkCopyToBuffer: pitch %d, height %u, at %u,%u, flags %08x", pitch, height, x, y, flags);
+    __try {
+        if (!bink || !dest || pitch <= 0 || (fmt != 9 && fmt != 10 && fmt != 3 && fmt != 4)) return r;
+        w = bink[0]; h = bink[1];
+        if (!w || !h || w > 4096 || h > 4096) return r;
+        if (w != g_scr_w || h != g_scr_h) { g_scr_w = w; g_scr_h = h; g_sub_shown = -1; }
+        if (!movie_subtitle_render(bink)) return r;
+        y0 = h - g_sub_h - h / 30;
+        if ((int)y0 < 0) y0 = 0;
+        for (yy = 0; yy < (unsigned)g_sub_h && y0 + yy < h && y0 + yy < height; yy++) {
+            BYTE *row = (BYTE *)dest + (y + y0 + yy) * pitch;
+            const BYTE *e = g_sub_edge + yy * w, *f = g_sub_fill + yy * w;
+            for (xx = 0; xx < w; xx++) {
+                unsigned k, a;
+                if (!e[xx]) continue;
+                k = 255 - e[xx]; a = f[xx];
+                if (fmt == 3 || fmt == 4) {
+                    BYTE *p = row + (x + xx) * 4;
+                    int c;
+                    for (c = 0; c < 3; c++) p[c] = (BYTE)(p[c] * k / 255 + (255 - p[c] * k / 255) * a / 255);
+                } else {
+                    WORD *p = (WORD *)(row + (x + xx) * 2);
+                    unsigned v = *p, r5, g, b5, gm = fmt == 10 ? 63 : 31, gs = 5;
+                    r5 = (v >> (fmt == 10 ? 11 : 10)) & 31; g = (v >> gs) & gm; b5 = v & 31;
+                    r5 = r5 * k / 255; g = g * k / 255; b5 = b5 * k / 255;
+                    r5 += (31 - r5) * a / 255; g += (gm - g) * a / 255; b5 += (31 - b5) * a / 255;
+                    *p = (WORD)((r5 << (fmt == 10 ? 11 : 10)) | (g << gs) | b5);
+                }
+            }
+        }
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
+        logf("movie subtitle: the frame buffer could not be written");
+    }
+    return r;
 }
 
 /* replaces "call 0x423390" at 0x5ae67e (the player object is already in [0x69c258]) */
@@ -1017,7 +1085,7 @@ static void *__cdecl MyEnterMovie(void)
             return NULL;
         }
     }
-    s = ((void *(__cdecl *)(void))ADDR_ENTER_MOVIE)();
+    s = ((void *(__cdecl *)(void))A(ADDR_ENTER_MOVIE))();
     g_movie_mode = s ? MOVIE_NORMAL : MOVIE_SKIP;
     if (!s) logf("movie: no Glide and DirectDraw failed, movie skipped");
     return s;
@@ -1037,7 +1105,7 @@ static void __cdecl MyLeaveMovie(void)
         return;
     }
     g_movie_mode = MOVIE_NORMAL;
-    ((void (__cdecl *)(void))ADDR_LEAVE_MOVIE)();
+    ((void (__cdecl *)(void))A(ADDR_LEAVE_MOVIE))();
 }
 
 /* replaces "call 0x5e3070" at 0x5e304d (thiscall, no stack arguments, returns al) */
@@ -1047,7 +1115,7 @@ static char __fastcall MyDrawFrame(DWORD *pl)
     unsigned w, h;
     if (g_movie_mode == MOVIE_SKIP) return 1;
     if (g_movie_mode != MOVIE_GLIDE || g_glide_fault)
-        return g_movie_mode == MOVIE_GLIDE ? 1 : ((char (__fastcall *)(DWORD *))ADDR_DRAW_NOSURF)(pl);
+        return g_movie_mode == MOVIE_GLIDE ? 1 : ((char (__fastcall *)(DWORD *))A(ADDR_DRAW_NOSURF))(pl);
     bink = (DWORD *)pl[0];
     if (!bink) return 0;
     w = bink[0]; h = bink[1];
@@ -1066,6 +1134,8 @@ static char __fastcall MyDrawFrame(DWORD *pl)
 static void patch_movies(void)
 {
     int n = 0;
+    /* the Fan Patch 1.28 plays the movies its own way (it replaces these calls at start-up); leave them alone */
+    if (g_fanpatch) return;
     n += patch_call(0x005ae67eu, (void *)MyEnterMovie, ADDR_ENTER_MOVIE);
     n += patch_call(0x005ae834u, (void *)MyLeaveMovie, ADDR_LEAVE_MOVIE);
     n += patch_call(0x005ae84du, (void *)MyLeaveMovie, ADDR_LEAVE_MOVIE);
@@ -1099,6 +1169,8 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
         s = strrchr(g_dir, '\\');
         if (s) *s = 0;
         dlog("---- wiz8jp hook loaded");
+        detect_exe();
+        if (g_fanpatch) dlog("Fan Patch 1.28 installed");
         load_chars();
         if (patch_call(ADDR_CALL_CREATE_TABLE, (void *)MyCreateTable, ADDR_CREATE_TABLE))
             dlog("patched CreateTransTable call");
@@ -1117,9 +1189,11 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
         patch_npc_trigger();
         patch_movies();
         load_subs();
-        if (!iat_hook(IAT_BinkOpen, (void *)MyBinkOpen, (void **)&o_BinkOpen)
-            || !iat_hook(IAT_BinkDDSurfaceType, (void *)MyBinkDDSurfaceType, (void **)&o_BinkDDSurfaceType))
+        if (!iat_hook(IAT_BinkOpen, "_BinkOpen@8", (void *)MyBinkOpen, (void **)&o_BinkOpen)
+            || !iat_hook(IAT_BinkDDSurfaceType, "_BinkDDSurfaceType@4", (void *)MyBinkDDSurfaceType, (void **)&o_BinkDDSurfaceType))
             logf("Bink import hooks failed");
+        if (g_fanpatch && !iat_hook(IAT_BinkCopyToBuffer, "_BinkCopyToBuffer@28", (void *)MyBinkCopyToBuffer, (void **)&o_BinkCopyToBuffer))
+            logf("Bink import hook failed: no movie subtitles");
         vfile_init();
     }
     return TRUE;

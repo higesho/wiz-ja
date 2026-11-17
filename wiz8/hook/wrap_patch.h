@@ -23,8 +23,11 @@ static BYTE *emit32(BYTE *p, DWORD v) { *(DWORD *)p = v; return p + 4; }
 
 static int patch_push_imm(DWORD site, DWORD oldv, DWORD newv)
 {
-    BYTE *p = (BYTE *)site;
+    BYTE *p;
     DWORD prot;
+    site = A(site); oldv = A(oldv);
+    if (!site || !oldv) return 0;
+    p = (BYTE *)site;
     if (p[0] != 0x68 || *(DWORD *)(p + 1) != oldv) { logf("push at %08x: unexpected bytes, skipped", site); return 0; }
     if (!VirtualProtect(p, 5, PAGE_EXECUTE_READWRITE, &prot)) return 0;
     *(DWORD *)(p + 1) = newv;
@@ -35,9 +38,12 @@ static int patch_push_imm(DWORD site, DWORD oldv, DWORD newv)
 
 static int hook_jmp(DWORD site, int span, const char *expect, BYTE *stub)
 {
-    BYTE *p = (BYTE *)site;
+    BYTE *p;
     DWORD prot;
     int j;
+    site = A(site);
+    if (!site) return 0;
+    p = (BYTE *)site;
     if (memcmp(p, expect, span) != 0) { logf("wrap site %08x: unexpected bytes, skipped", site); return 0; }
     if (!VirtualProtect(p, span, PAGE_EXECUTE_READWRITE, &prot)) return 0;
     p[0] = 0xe9;
@@ -85,7 +91,7 @@ static void patch_wrap(void)
     j3[1] = (BYTE)(p - (j3 + 2));
     p = emit(p, "\x58", 1);                                   /* L3: pop eax */
     p = emit(p, "\x66\xc7\x03\x00\x00", 5);                   /* mov word ptr [ebx], 0 */
-    p = emit_rel32(p, "\xe9", 1, 0x004f3634);
+    p = emit_rel32(p, "\xe9", 1, A(0x004f3634));
     ok += hook_jmp(0x004f362f, 5, "\x66\xc7\x03\x00\x00", stub);
 
     /* 0x4f369c: mov word ptr [ebx], 0x20   -> write back the separator that was there */
@@ -94,7 +100,7 @@ static void patch_wrap(void)
     p = emit(p, "\x66\xa1", 2); p = emit32(p, (DWORD)&g_sep_a); /* mov ax, [g_sep_a] */
     p = emit(p, "\x66\x89\x03", 3);                           /* mov [ebx], ax */
     p = emit(p, "\x58", 1);                                   /* pop eax */
-    p = emit_rel32(p, "\xe9", 1, 0x004f36a1);
+    p = emit_rel32(p, "\xe9", 1, A(0x004f36a1));
     ok += hook_jmp(0x004f369c, 5, "\x66\xc7\x03\x20\x00", stub);
 
     /* ---- 0x5d2a50 (message dialogs) ---- */
@@ -129,7 +135,7 @@ static void patch_wrap(void)
     j3[1] = (BYTE)(p - (j3 + 2));
     p = emit(p, "\x5a\x59", 2);                               /* L3: pop edx; pop ecx */
     p = emit(p, "\x66\xc7\x04\x46\x00\x00", 6);               /* mov word ptr [esi+eax*2], 0 */
-    p = emit_rel32(p, "\xe9", 1, 0x005d2b30);
+    p = emit_rel32(p, "\xe9", 1, A(0x005d2b30));
     ok += hook_jmp(0x005d2b2a, 6, "\x66\xc7\x04\x46\x00\x00", stub);
 
     FlushInstructionCache(GetCurrentProcess(), cave, p - cave);
