@@ -1682,6 +1682,80 @@ __declspec(naked) static void stub_party(void)
     }
 }
 
+/* ------------------------------------------------------------------ */
+/* 会話の「&%]」がすぐ流れる (英語版でも起きるゲーム本体の不具合)        */
+/*  % は一定時間待つだけで、待ち時間 (0x4a0fa4) がミリ秒で数えられるため    */
+/*  今のパソコンでは一瞬で次へ進む。台詞の区切りの「%]」(窓を消す直前) だけ */
+/*  @ と同じ「押すまで待つ」にする。「&%%]」は 1 つ目の % は元のまま。      */
+/*  訳文の % を @ に替えないのは、@ の処理が待ったあとに前の物語の音声を    */
+/*  鳴らし直すため (0x43f5b6〜)。待ちの関数だけを直接呼ぶ。                 */
+/*  0x43f4bb (人物との会話) と 0x47b210 (Gold の物語表示) の % の処理。     */
+/*  どちらも呼び出し元の [ebp+8] が % の次の字を指している。                */
+/* ------------------------------------------------------------------ */
+#define A_TALK_PCT_CALL  0x43f546   /* call 0x43861a (一定時間待つ) */
+#define A_TALK_DELAY     0x43861a
+#define A_TALK_WAITKEY   0x43f8bc   /* @ の待ち (引数 0 で押すまで) */
+#define A_STORY_PCT_CALL 0x47b2aa   /* call 0x4175aa (一定時間待つ) */
+#define A_STORY_DELAY    0x4175aa
+#define A_STORY_WAITKEY  0x47b5dc
+static DWORD g_talk_delay, g_talk_waitkey, g_story_delay, g_story_waitkey;
+
+/* 押すまで待つにした回数を jpmod.log に残す (確認用、最初の 10 回だけ) */
+static void __cdecl pct_note(int story)
+{
+    static int n;
+    if (n < 10) logf("%s: %%] -> wait for key (%d)", story ? "story" : "talk", ++n);
+}
+
+__declspec(naked) static void hk_talk_pct(void)
+{
+    __asm {
+        mov eax, [ebp + 8]
+        cmp byte ptr [eax], ']'
+        jne talk_orig
+        push 0
+        call pct_note
+        add esp, 4
+        push 0
+        call [g_talk_waitkey]
+        add esp, 4
+        ret
+    talk_orig:
+        jmp [g_talk_delay]
+    }
+}
+
+__declspec(naked) static void hk_story_pct(void)
+{
+    __asm {
+        mov eax, [ebp + 8]
+        cmp byte ptr [eax], ']'
+        jne story_orig
+        push 1
+        call pct_note
+        add esp, 4
+        push 0
+        call [g_story_waitkey]
+        add esp, 4
+        ret
+    story_orig:
+        jmp [g_story_delay]
+    }
+}
+
+static void patch_pct_waits(void)
+{
+    g_talk_delay = P(DWORD, A_TALK_DELAY);
+    g_talk_waitkey = P(DWORD, A_TALK_WAITKEY);
+    g_story_delay = P(DWORD, A_STORY_DELAY);
+    g_story_waitkey = P(DWORD, A_STORY_WAITKEY);
+    if (!patch_call(A_TALK_PCT_CALL, A_TALK_DELAY, hk_talk_pct))
+        logf("talk %% wait: unexpected code, not hooked");
+    if (!patch_call(A_STORY_PCT_CALL, A_STORY_DELAY, hk_story_pct))
+        logf("story %% wait: unexpected code, not hooked");
+    FlushInstructionCache(GetCurrentProcess(), NULL, 0);
+}
+
 static BOOL install_hooks(void)
 {
     unsigned char *dc = P(unsigned char *, A_DRAW_CHAR);
@@ -1718,6 +1792,7 @@ static BOOL install_hooks(void)
         logf("strlen sites patched: %d/%d", ok, n);
     }
     patch_pathbufs();
+    patch_pct_waits();
     if (!memcmp(P(unsigned char *, A_PARTY_FROM), PARTY_FROM_CODE, sizeof PARTY_FROM_CODE) &&
         !memcmp(P(unsigned char *, A_PARTY_BACK), PARTY_BACK_CODE, sizeof PARTY_BACK_CODE)) {
         g_party_back = P(DWORD, A_PARTY_BACK);
