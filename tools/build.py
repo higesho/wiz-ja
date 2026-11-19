@@ -183,6 +183,7 @@ def main():
             if ord(c) >= 0x80 and c not in must and c in seen_s:
                 must.append(c)
     singles = must[:95]
+    n_fake = len(singles)          # fake trap letters: codes 0x81.. (the race/class name chars)
     for c, _ in freq.most_common():
         if len(singles) >= 95:
             break
@@ -298,6 +299,9 @@ def main():
     ex[HELP_BASE + 0x200: HELP_BASE + 0x200 + len(hcode)] = hcode
     a_dstrlen = HELP_BASE                       # first routine in the file
     a_fixw = HELP_BASE + hcode.index(bytes([0x56, 0x51, 0x52, 0x8b, 0x76, 0xaa]))
+    a_trap_prep = HELP_BASE + hcode.index(bytes([0x55, 0x89, 0xe5, 0x56, 0x57, 0x53, 0x8b, 0x7e, 0x04]))
+    a_trap_put = HELP_BASE + hcode.index(bytes([0x55, 0x89, 0xe5, 0x8a, 0x46, 0x06, 0xfe, 0xc8]))
+    print('helpers end 0x%x (limit 0x23e3)' % (HELP_BASE + len(hcode)))
 
     # WROOT's own centering sites
     for m in re.finditer(re.escape(bytes([0x40, 0xb9, 0x02, 0x00, 0x99, 0xf7, 0xf9])), bytes(ex)):
@@ -347,6 +351,16 @@ def main():
         for m in re.finditer(rb'\x59\x89\x46\xfc\x8b\x1e..\x8a\x47\x06\x2a\xe4\x8b\xc8\x8b\x46\xfc', bytes(ov), re.S):
             i = m.start() + 1
             ov[i:i + 3] = b'\xe8' + rel(OVB + i, a_fixw); nw += 1
+        if ovn == 'WTREA.OVR':
+            # chest "inspect" shuffles the trap name byte by byte: keep double-byte chars whole,
+            # and draw the fake (red) letters from the single-byte kana/kanji instead of A-Z
+            def ovp(i, old, new):
+                assert ov[i:i + len(old)] == bytes(old), ('WTREA mismatch at %x' % i, ov[i:i + len(old)].hex())
+                ov[i:i + len(new)] = bytes(new)
+            ovp(0x21bf, [0xe8, 0xe8, 0xd1], b'\xe8' + rel(OVB + 0x21bf, a_trap_prep))   # strcpy(0x50de, 0x50ca)
+            ovp(0x2391, [0xe8, 0xbf, 0xb9], b'\xe8' + rel(OVB + 0x2391, a_trap_put))    # putchar(win, letter, color)
+            ovp(0x22f3, [0xb8, 0x1a, 0x00], [0xb8, n_fake, 0x00])                       # random(26) -> random(n_fake)
+            ovp(0x22fb, [0x05, 0x41, 0x00], [0x05, 0x81, 0x00])                         # + 'A' -> + 0x81
         files[ovn] = ov
     print('overlay patches: %d centering, %d word-wrap' % (nc, nw))
     for n, d in files.items():
