@@ -780,9 +780,13 @@ static HHOOK g_hook;
 
 static LRESULT CALLBACK KbProc(int code, WPARAM wp, LPARAM lp)
 {
-    if (code == HC_ACTION && (wp == WM_KEYDOWN || wp == WM_SYSKEYDOWN)) {
+    /* plain F9 only: Alt+F9 (DOSBox: load state), Ctrl+F9 and Shift+F9 go to the game untouched */
+    if (code == HC_ACTION && wp == WM_KEYDOWN) {
         KBDLLHOOKSTRUCT *k = (KBDLLHOOKSTRUCT *)lp;
-        if (k->vkCode == HOTKEY_VK) {
+        if (k->vkCode == HOTKEY_VK && !(k->flags & LLKHF_ALTDOWN) &&
+            !(GetAsyncKeyState(VK_MENU) & 0x8000) && !(GetAsyncKeyState(VK_CONTROL) & 0x8000) &&
+            !(GetAsyncKeyState(VK_SHIFT) & 0x8000) && !(GetAsyncKeyState(VK_LWIN) & 0x8000) &&
+            !(GetAsyncKeyState(VK_RWIN) & 0x8000)) {
             HWND fg = GetForegroundWindow(); DWORD pid = 0;
             GetWindowThreadProcessId(fg, &pid);
             if (fg == g_wnd || (g_pid && pid == g_pid)) {
