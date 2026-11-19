@@ -15,6 +15,7 @@ SITE = os.path.join(ROOT, 'site')
 BASE = 'https://higesho.github.io/wiz-ja/'
 REPO = 'https://github.com/higesho/wiz-ja'
 RELEASE = REPO + '/releases/tag/wiz6-v1.1.1'
+TOOLS = REPO + '/releases/tag/tools-v1.0'   # 地図ツール・顔グラエディタ（6・7、オプション）
 ZIP = 'Wizardry6_JP.zip'
 
 # 画面の写真（ファイル名, 見出し, alt）— 撮れたものから置いていく
@@ -222,6 +223,13 @@ def wiz6_page(shots):
 </ol>
 <p>ゲームのフォルダは、Steam でゲームを右クリック → 管理 → ローカルファイルを閲覧、で開く場所です（<code>BANE</code> フォルダがある場所）。</p>
 
+<h2>オプション：地図ツールと顔グラエディタ</h2>
+<p>日本語化パッチとは別に、次の 2 つのツールを用意しています（<a href="%(tools)s">ダウンロード（GitHub）</a>）。日本語化パッチを入れていなくても使えます。使い方は、それぞれの zip の中の説明書を見てください。</p>
+<ul>
+<li><strong>地図ツール</strong>（<code>Wizardry6_Automap.zip</code>）… 歩いた所の地図を、ゲームの横の小さなウインドウに描きます。マスにメモも書けます。ゲームのメモリを読むだけで、ゲームのファイルは書き換えません。</li>
+<li><strong>顔グラエディタ</strong>（<code>Wizardry6_FaceEditor.zip</code>）… キャラクターの顔グラ（24×24 ドット・16 色、42 枚）を描き換えます。画像の読み込み・書き出しや、1 枚ずつ元の絵に戻すこともできます。</li>
+</ul>
+
 <h2>外し方</h2>
 <ul>
 <li>Steam の「ゲームファイルの整合性を確認」を実行すると、元の英語版に戻ります。保存しておいた <code>BANE</code> フォルダを上書きで戻しても、元に戻ります。セーブデータの形式は変更していません。</li>
@@ -249,7 +257,7 @@ def wiz6_page(shots):
 </ul>
 </div>
 </main>
-''' % dict(release=RELEASE, shots=shots_html, zip=ZIP, repo=REPO)
+''' % dict(release=RELEASE, shots=shots_html, zip=ZIP, repo=REPO, tools=TOOLS)
     s += '\n' + FOOTER
     return s
 
@@ -294,6 +302,13 @@ Steam 版に入っている Wizardry Gold（Windows 版）と、DOSBox で動く
 <li>Steam から起動します。「プレイ」を押すと起動方法を選ぶ画面が出るので、遊ぶ版を選びます。</li>
 </ol>
 <p>ゲームのフォルダは、Steam でゲームを右クリック → 管理 → ローカルファイルを閲覧、で開く場所です（<code>wizardry7gold</code>・<code>DSAVANT</code>・<code>dosbox_windows</code> フォルダがある場所）。</p>
+
+<h2>オプション：地図ツールと顔グラエディタ</h2>
+<p>日本語化パッチとは別に、次の 2 つのツールを用意しています（<a href="%(tools)s">ダウンロード（GitHub）</a>）。日本語化パッチを入れていなくても使えます。使い方は、それぞれの zip の中の説明書を見てください。</p>
+<ul>
+<li><strong>地図ツール</strong>（<code>Wizardry7_Automap.zip</code>、Wizardry Gold 版用）… 歩いた所の地図を、ゲームの横の小さなウインドウに描きます。マスにメモも書けます。ゲームのメモリを読むだけで、ゲームのファイルは書き換えません。</li>
+<li><strong>顔グラエディタ</strong>（<code>Wizardry7_FaceEditor.zip</code>、Gold 版・DOS 版の両方）… キャラクターの顔グラ（33 枚）を描き換えます。画像の読み込み・書き出しや、1 枚ずつ元の絵に戻すこともできます。</li>
+</ul>
 
 <h2>起動のしかた</h2>
 <table class="ver">
@@ -348,7 +363,7 @@ Steam の既定の場所 <code>C:\Program Files (x86)\Steam\steamapps\common\…
 </ul>
 </div>
 </main>
-""" % dict(release=RELEASE7, shots=shots_html, zip=ZIP7, repo=REPO)
+""" % dict(release=RELEASE7, shots=shots_html, zip=ZIP7, repo=REPO, tools=TOOLS)
     s += '\n' + FOOTER
     return s
 

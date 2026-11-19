@@ -6,6 +6,8 @@
 - 第6作「Wizardry 6: Bane of the Cosmic Forge」の日本語化パッチ: [ダウンロード](https://github.com/higesho/wiz-ja/releases/tag/wiz6-v1.1.1)
 - 第7作「Wizardry 7: Crusaders of the Dark Savant」（Wizardry Gold 版）の日本語化パッチ: [ダウンロード](https://github.com/higesho/wiz-ja/releases/tag/wiz7-v1.1.1)
 
+- オプション: ウィザードリィ6・7 の地図ツールと顔グラエディタ: [ダウンロード](https://github.com/higesho/wiz-ja/releases/tag/tools-v1.0)（ソースは `extras/`）
+
 ゲームのフォルダに、ファイルを上書きで置くだけで日本語になります。使い方は、ダウンロードした zip の中の `説明書.txt` を見てください。
 誤訳や不自然な訳は [Issues](https://github.com/higesho/wiz-ja/issues) で教えてください。
 
@@ -59,6 +61,16 @@
 - ソースは `wiz7/src/`（C、MSVC でビルド）、ツールは `wiz7/tools/`、訳文は `wiz7/translation/ja/`、
   詳しい仕組みと作業手順は `wiz7/README.md` にあります。英語の原文は入っていません（`tools/extract_msgs.py` で手元のゲームから取り出します）。
 - 用語（種族・職業・能力値・称号・技能・呪文）はウィザードリィ6 の訳とそろえています。
+
+## 地図ツールと顔グラエディタ（`extras/`）
+
+日本語化パッチとは別のオプションです（日本語化パッチを入れていなくても使えます）。C（Win32）で書いていて、MSVC でビルドします。
+
+- `extras/automap/` … 地図ツール。`wiz6map.c`（DOSBox で動くウィザードリィ6 のメモリを読む）、`wiz7map.c`（Wizardry Gold のメモリを読む）。
+  ゲームのファイルは書き換えません。歩いた記録はゲームのフォルダの `JPMAP.CUR`（6）・`JPMAP.VIS`（7）に保存します。
+- `extras/faceedit/` … 顔グラエディタ。`wiz6face.c`（`BANE\WPORT1〜3.EGA`）、`wiz7face.c`（Gold 版の `RES\BITS\PCA`・`PCB` の BMP と DOS 版の `PORTDATA.VGA`）。
+  元の絵は入れておらず、チェックサムで見分けます。
+- ビルドは各フォルダの `_cc*.bat`、配布用の zip は `extras/make_*_release.py` で作ります。
 
 ## ライセンスなど
 
