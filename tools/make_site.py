@@ -30,7 +30,7 @@ SHOTS = [
     ('spell.png', '呪文', '呪文の画面'),
 ]
 
-RELEASE7 = REPO + '/releases/tag/wiz7-v1.1'
+RELEASE7 = REPO + '/releases/tag/wiz7-v1.1.1'
 ZIP7 = 'Wizardry7_JP.zip'
 SHOTS7 = [
     ('title.png', 'タイトル画面', 'ウィザードリィ7 のタイトル画面'),
@@ -43,7 +43,7 @@ SHOTS7 = [
     ('dos.png', 'DOS 版', 'DOS 版で店の主人に会った画面'),
 ]
 
-RELEASE8 = REPO + '/releases/tag/wiz8-v1.1'
+RELEASE8 = REPO + '/releases/tag/wiz8-v1.1.1'
 FANPATCH8 = 'https://mods.rpghq.org/wizardry-8/350301'
 ZIP8 = 'Wizardry8_JP.zip'
 # ウィザードリィ8 の日本語化の本体は ../../Wizardry8/JPMod（配布物は JPMod/release/Wizardry8_JP.zip）
@@ -404,8 +404,10 @@ def wiz8_page(shots, talk):
 <li>ファンパッチの起動方法どおり、<code>Wiz8_v128.exe</code> から起動します。初めて起動したときの言語の選択では <strong>English</strong> を選んでください。</li>
 </ol>
 <ul>
-<li>ファンパッチの build 6709 と、そのベータ版 build 6719 で動作を確認しています。日本語化は起動のたびに、書き換える場所をゲームの exe の中から探すので、ファンパッチが更新されても多くの場合はそのまま動きます（見つからなかった所は英語のまま動きます）。</li>
+<li>ファンパッチの build 6709、ベータ版 build 6719、build 6735（2025年2月の版）で動作を確認しています。日本語化は起動のたびに、書き換える場所をゲームの exe の中から探すので、ファンパッチが更新されても多くの場合はそのまま動きます（見つからなかった所は英語のまま動きます）。</li>
 <li>ファンパッチが追加した画面や文言（ランチャー、追加の設定ページ、ファンパッチ独自のメッセージ）は英語のままです。</li>
+<li>ウィンドウモード（ファンパッチの CTRL+F12 など）は、描画が Glide2x（Steam 版の既定）のままだと使えません。ファンパッチの <code>3DSetup1_28c.exe</code> で描画を DirectX7 か OpenGL にしてください（日本語化の有無とは関係ありません）。</li>
+<li>Windows の表示スケールが 100% でないと、ウィンドウモードでマウスの動く範囲がずれることがあります。そのときは <code>Wiz8_v128.exe</code> のプロパティ →「互換性」→「高 DPI 設定の変更」で、「高い DPI スケールの動作を上書きします」を「アプリケーション」にしてみてください。</li>
 <li>ファンパッチの言語を English 以外（Polish など）にした場合は確認していません。</li>
 <li>動画はファンパッチの再生のしかたで流れ、日本語の字幕はそこに重ねて表示します。</li>
 <li>ファンパッチの設定や推奨（新しく始めることなど）は、ファンパッチの説明に従ってください。ファンパッチについての質問は、ファンパッチの配布元へお願いします。</li>

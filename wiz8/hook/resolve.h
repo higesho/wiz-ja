@@ -12,7 +12,7 @@
 #define TS_STEAM 0x3c26eee6u      /* PE TimeDateStamp of the Steam Wiz8.exe */
 
 static int   g_other;             /* not the Steam exe: the addresses come from g_res */
-static int   g_fanpatch;          /* the Fan Patch 1.28 (its CFAgent) is installed next to the exe */
+static int   g_fanpatch;          /* the Fan Patch 1.28 exe (its CFAgent) is running: not the Steam exe, fan patch files next to it */
 static DWORD g_res[NSIG];
 static BYTE *g_img;
 static DWORD g_img_size, g_img_pref;   /* g_img_pref: the exe's preferred base (= g_img in the game) */
@@ -159,8 +159,10 @@ static void detect_exe(void)
     nt = (IMAGE_NT_HEADERS *)(g_img + ((IMAGE_DOS_HEADER *)g_img)->e_lfanew);
     g_img_size = nt->OptionalHeader.SizeOfImage;
     g_img_pref = nt->OptionalHeader.ImageBase;
-    g_fanpatch = file_exists("Wiz8.dll") || file_exists("cfagent1.28.dll");
     g_other = nt->FileHeader.TimeDateStamp != TS_STEAM;
+    /* Steam still starts the original Wiz8.exe when the fan patch is installed: that exe does not load the
+       fan patch (its Wiz8.dll / CFAgent), so it keeps all of our patches, the movie fix included */
+    g_fanpatch = g_other && (file_exists("Wiz8.dll") || file_exists("cfagent1.28.dll"));
     if (g_other) {
         __try {
             resolve_addresses();
