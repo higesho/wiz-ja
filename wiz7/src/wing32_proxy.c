@@ -410,6 +410,22 @@ static DWORD WINAPI hk_mciSendStringA(LPCSTR cmd, LPSTR ret, UINT n, HWND cb)
     }
     if (cmd && !_strnicmp(cmd, "open ", 5) && (at = strstr(cmd, " alias ")) != NULL) {
         sscanf(at + 7, "%63s", g_movalias);
+        /* ゲームは "open %s alias mov ..." とパスを引用符なしで渡すので、パスに空白があると開けない
+           ("Unable to open Movie"。Steam の既定の C:\Program Files (x86)\... など。元のゲームの不具合)。
+           パスを引用符で囲む。長すぎるパスも MCI は開けないので、短い名前 (8.3) が取れればそれを使う */
+        if (cmd[5] != '"' && (size_t)(at - cmd) < 300) {
+            char path[300], sp[300];
+            int len = (int)(at - cmd) - 5;
+            memcpy(path, cmd + 5, len); path[len] = 0;
+            if (strchr(path, ' ')) {
+                DWORD k = GetShortPathNameA(path, sp, sizeof sp);
+                if (k == 0 || k >= sizeof sp) strcpy(sp, path);
+                _snprintf(buf, sizeof buf, "open \"%s\"%s", sp, at);
+                buf[sizeof buf - 1] = 0;
+                if (g_debug >= 1) logf("movie path quoted: %s", buf);
+                return real_mciSendStringA(buf, ret, n, cb);
+            }
+        }
     }
     if (cmd && !_strnicmp(cmd, "status ", 7) && strstr(cmd, "window handle")) {
         DWORD r = real_mciSendStringA(cmd, ret, n, cb);

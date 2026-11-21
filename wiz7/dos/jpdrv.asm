@@ -317,9 +317,19 @@ uf_c:
     jne uf_cend
     inc di
     cmp al, 0x7e
-    jne uf_c
+    jne uf_carg
     cmp byte ptr [di], 0
     je uf_c
+    inc di
+    jmp uf_c
+; 記号の引数のバイト (VBASE の "%" の待ち秒数 0x05〜0x14 など、0x01〜0x1f) も同じ単位に入れる。
+; 切り離すと記号の処理が単位の終わりの 0 を引数として読み、待たずに進んでしまう
+uf_carg:
+    mov al, byte ptr [di]
+    or al, al
+    je uf_c
+    cmp al, 0x20
+    jae uf_c
     inc di
     jmp uf_c
 uf_cend:

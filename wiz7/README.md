@@ -37,6 +37,8 @@ DOS 版の仕組みは下の「DOS 版」を参照。
   - WinG の `WinGBitBlt`/`WinGStretchBlt` (ゲーム画面)、取り込み表の `StretchDIBits`/`PatBlt` (ゲーム領域内の描画だけ)
   - 動画 (MCI の AVI、`style child`): `status <alias> window handle` で得た動画ウィンドウの `MoveWindow`/`SetWindowPos`
     を拡大し、`put <alias> destination` で動画もウィンドウいっぱいに描かせる
+  - 動画を開く `open %s alias mov ...` はパスを引用符で囲まない (元のゲームの不具合) ので、パスに空白があると
+    "Unable to open Movie" になる (Steam の既定の C:\Program Files (x86)\...)。DLL が引用符で囲み、短い名前 (8.3) が取れればそれを使う
   - マウス: ゲームのウィンドウをサブクラス化し、マウスメッセージの座標を元の 640x400 上の位置に戻す。
     `SetCursorPos` は逆に拡大後の位置にする
 - 起動時メニューなどの Windows ダイアログは拡大しない。`smooth=1` でなめらかな拡大 (HALFTONE、ぼやける)。
@@ -229,6 +231,9 @@ python dosuild_dos.py --uninstall  :: DSAVANT を元に戻す
 
 - 文字コード: 全角 1 字 = 2 バイト `[0x80 + n>>7][0x80 + n&0x7f]` (n は字の番号)。MSG.DBS・SCENARIO.DBS に書き込む。
   `dos/msg_dos.txt` は DOS 版だけの差し替え (職業の略称 9980〜 など)。
+- 語分け (`unit_far`) は語頭の制御記号の並びを 1 単位にする。`~` の次の 1 字と、記号の後ろの 0x01〜0x1f のバイト
+  (VBASE の `%` の待ち秒数。オープニングの紙芝居の `&%{0a}]` など) も同じ単位に入れる。切り離すと `%` が単位の終わりの 0 を
+  秒数として読み、待たずに流れる (2026-11-21 に直した)。
 - 表示: VGA.DRV の後ろに `dos/jpdrv.asm` (nasm 風の記法を keystone で組み立て) を足し、ドライバの領域を 64KB に広げる。
   1 字を描く関数を差し替え、全角を東雲 12 ドット (大きいフォント) か美咲 8×8 (高さ 8 以下のフォント) で描く。幅の計算・語分けも差し替える。
 - 各オーバーレイ (*.OVR) の手直し (build_dos.py の build_*): 物語の語分け (VBASE・VMAZE・VPCVW・VTREA)、人物の台詞の折り返し (VMNPC)、

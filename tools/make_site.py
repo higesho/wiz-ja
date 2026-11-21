@@ -31,7 +31,7 @@ SHOTS = [
     ('spell.png', '呪文', '呪文の画面'),
 ]
 
-RELEASE7 = REPO + '/releases/tag/wiz7-v1.1.1'
+RELEASE7 = REPO + '/releases/tag/wiz7-v1.1.2'
 ZIP7 = 'Wizardry7_JP.zip'
 SHOTS7 = [
     ('title.png', 'タイトル画面', 'ウィザードリィ7 のタイトル画面'),
@@ -342,6 +342,7 @@ Steam 版に入っている Wizardry Gold（Windows 版）と、DOSBox で動く
 （音声ファイルの名前を組み立てる所があふれるためで、英語版でも起きます。<code>wizardry7gold</code> フォルダのパスがおよそ 53 文字を超えると起き、
 Steam の既定の場所 <code>C:\Program Files (x86)\Steam\steamapps\common\…</code> でも超えます）。このパッチではこの不具合を直しています。
 音楽の読み込みの一部（休息のときの曲など）に同じ原因の所が残っていますが、こちらは直していません。</li>
+<li><strong>動画が再生されない</strong>：元のゲームには、ゲームのフォルダのパスに空白が入っていると（<code>C:\Program Files (x86)\…</code> など）、オープニングなどの動画が「Unable to open Movie」と出て再生されない不具合があります（英語版でも起きます）。このパッチではこの不具合も直しています。</li>
 <li>ゲーム画面は高さ 1080 ドットまで拡大して表示します。大きさは <code>jpmod</code> フォルダの <code>jpmod.ini</code> で変えられます。起動時のメニューなど Windows の画面は拡大されません。</li>
 <li><code>WIZARD.EXE</code> が違う版（Gold 1.1b 以外）では警告が出て、日本語化されずに英語のまま起動します。</li>
 </ul>
