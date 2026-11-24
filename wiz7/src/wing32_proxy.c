@@ -50,8 +50,10 @@ static DWORD g_delta;               /* 実ロードアドレス - EXE_BASE */
 static char g_dir[MAX_PATH];        /* jpmod データフォルダ (末尾 \) */
 static FILE *g_log;
 
+/* ログは試験版（build.bat test）だけ。配布版では g_log を開かず、logf は何もしない */
 static void logf(const char *fmt, ...)
 {
+#ifdef WIZ7JP_TEST
     va_list ap;
     if (!g_log) return;
     va_start(ap, fmt);
@@ -59,6 +61,9 @@ static void logf(const char *fmt, ...)
     va_end(ap);
     fputc('\n', g_log);
     fflush(g_log);
+#else
+    (void)fmt;
+#endif
 }
 
 /* ------------------------------------------------------------------ */
@@ -466,8 +471,11 @@ static void load_config(void)
     _snprintf(ini, MAX_PATH, "%sjpmod.ini", g_dir);
     GetPrivateProfileStringA("font", "face", "MS Gothic", face, sizeof face, ini);
     MultiByteToWideChar(CP_UTF8, 0, face, -1, g_face, 64);
+#ifdef WIZ7JP_TEST
+    /* 開発用の [debug]（試験版だけ）。配布版では読まず、どちらも 0 のまま */
     g_debug = GetPrivateProfileIntA("debug", "log", 1, ini);
     g_nohooks = GetPrivateProfileIntA("debug", "nohooks", 0, ini);
+#endif
     g_disp_h = GetPrivateProfileIntA("display", "height", 1080, ini);
     g_disp_smooth = GetPrivateProfileIntA("display", "smooth", 0, ini);
     for (i = 0; i < NFONT; i++) {
@@ -1821,6 +1829,8 @@ static BOOL install_hooks(void)
     return TRUE;
 }
 
+#ifdef WIZ7JP_TEST
+/* ここから DllMain の前までは試験版（build.bat test）だけ */
 /* ------------------------------------------------------------------ */
 /* デバッグ: フレームバッファを BMP 保存 (F12 または jpmod\shot.req)     */
 /* ------------------------------------------------------------------ */
@@ -1946,6 +1956,8 @@ static LONG CALLBACK crash_logger(PEXCEPTION_POINTERS ep)
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
+#endif /* WIZ7JP_TEST */
+
 BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
 {
     if (reason == DLL_PROCESS_ATTACH) {
@@ -1956,11 +1968,13 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
         if (p) p[1] = 0;
         strcat(g_dir, "jpmod\\");
         load_config();
+#ifdef WIZ7JP_TEST
         if (g_debug) {
             char lp[MAX_PATH];
             _snprintf(lp, MAX_PATH, "%sjpmod.log", g_dir);
             g_log = fopen(lp, "w");
         }
+#endif
         g_delta = (DWORD)GetModuleHandleA(NULL) - EXE_BASE;
         g_wc2code = (unsigned short *)calloc(0x10000, sizeof(unsigned short));
         load_translations();
@@ -1971,6 +1985,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
             for (i = 0; i < NFONT; i++) load_bdf(i);
         }
         if (!g_nohooks) install_hooks(); else logf("nohooks: hooks disabled");
+#ifdef WIZ7JP_TEST
         if (g_debug) {
             AddVectoredExceptionHandler(1, crash_logger);
             {
@@ -1980,6 +1995,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
             }
             CreateThread(NULL, 0, debug_thread, NULL, 0, NULL);
         }
+#endif
     }
     return TRUE;
 }

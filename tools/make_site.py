@@ -15,7 +15,7 @@ SITE = os.path.join(ROOT, 'site')
 BASE = 'https://higesho.github.io/wiz-ja/'
 REPO = 'https://github.com/higesho/wiz-ja'
 RELEASE = REPO + '/releases/tag/wiz6-v1.1.1'
-TOOLS = REPO + '/releases/tag/tools-v1.0'   # 地図ツール・顔グラエディタ（6・7、オプション）
+TOOLS = REPO + '/releases/tag/tools-v1.1'   # 地図ツール・顔グラエディタ（6・7、オプション）
 ZIP = 'Wizardry6_JP.zip'
 
 # 画面の写真（ファイル名, 見出し, alt）— 撮れたものから置いていく
@@ -31,7 +31,7 @@ SHOTS = [
     ('spell.png', '呪文', '呪文の画面'),
 ]
 
-RELEASE7 = REPO + '/releases/tag/wiz7-v1.1.2'
+RELEASE7 = REPO + '/releases/tag/wiz7-v1.1.3'
 ZIP7 = 'Wizardry7_JP.zip'
 SHOTS7 = [
     ('title.png', 'タイトル画面', 'ウィザードリィ7 のタイトル画面'),
@@ -44,7 +44,7 @@ SHOTS7 = [
     ('dos.png', 'DOS 版', 'DOS 版で店の主人に会った画面'),
 ]
 
-RELEASE8 = REPO + '/releases/tag/wiz8-v1.1.1'
+RELEASE8 = REPO + '/releases/tag/wiz8-v1.1.2'
 FANPATCH8 = 'https://mods.rpghq.org/wizardry-8/350301'
 ZIP8 = 'Wizardry8_JP.zip'
 # ウィザードリィ8 の日本語化の本体は ../../Wizardry8/JPMod（配布物は JPMod/release/Wizardry8_JP.zip）

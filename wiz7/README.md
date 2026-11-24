@@ -194,8 +194,8 @@ jpmod/
 ## ビルドと配置
 
 ```bat
-src\build.bat
-python tools\deploy.py          :: 配置
+src\build.bat test             :: 試験版 build\test\wing32.dll (下の開発用機能入り。配布しない)
+python tools\deploy.py          :: 試験版を配置
 python tools\deploy.py --remove :: 取り除く
 ```
 
@@ -203,7 +203,7 @@ python tools\deploy.py --remove :: 取り除く
 
 ```bat
 python tools\batch.py merge       :: 訳文の結合 (キーワードの書き添えも)
-src\build.bat
+src\build.bat                     :: 配布版 build\wing32.dll
 python tools\make_release.py      :: release\Wizardry7_JP.zip
 ```
 
@@ -242,7 +242,9 @@ python dosuild_dos.py --uninstall  :: DSAVANT を元に戻す
   `dos/savetest/setloc.py` (SAVEGAME.DBS の位置を書き換えて任意の場所から始める。位置は level・区画・区画内の x/y)。
 - 元のファイル (`dos/original/`) と出力 (`dos/out/`) は配らない・載せない。
 
-## 開発用機能 (`jpmod.ini` の `[debug] log=1` 以上)
+## 開発用機能 (試験版 `src\build.bat test` だけ。`jpmod.ini` の `[debug] log=1` 以上)
+
+配布版の wing32.dll には入れない (`#ifdef WIZ7JP_TEST`)。配布版は `[debug]` を読まない。
 
 - `wizardry7gold/jpmod/jpmod.log` にログ。`log=2` で表示したメッセージ ID をすべて記録 (未訳箇所の特定に使う)。
 - ゲーム中に F12、または `wizardry7gold/jpmod/shot.req` を作るとフレームバッファを `shot_NNN.bmp` に保存。

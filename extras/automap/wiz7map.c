@@ -270,8 +270,12 @@ static Note *note_at(int m, int x, int y)
     return NULL;
 }
 
+/* 動きの記録 JPMAP.LOG（調べるとき用）は試験版（build.bat test）だけ。配布版では何もしない */
 static void logw(const wchar_t *fmt, ...)
 {
+#ifndef WIZTOOL_TEST
+    (void)fmt;
+#else
     wchar_t p[MAX_PATH], line[256]; FILE *f; va_list ap; SYSTEMTIME t; WIN32_FILE_ATTRIBUTE_DATA a;
     if (!g_gamedir[0]) return;
     path_in_game(p, L"JPMAP.LOG");
@@ -282,6 +286,7 @@ static void logw(const wchar_t *fmt, ...)
     va_start(ap, fmt); vswprintf(line, 256, fmt, ap); va_end(ap);
     fwprintf(f, L"%02d:%02d:%02d %s\n", t.wHour, t.wMinute, t.wSecond, line);
     fclose(f);
+#endif
 }
 
 /* ---------------------------------------------------------------- game memory */
@@ -1022,6 +1027,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, LPWSTR cmd, int show)
     g_font_small = CreateFontW(-13, 0, 0, 0, FW_NORMAL, 0, 0, 0, SHIFTJIS_CHARSET, 0, 0, CLEARTYPE_QUALITY, 0, L"Meiryo UI");
     g_font_mark = CreateFontW(-12, 0, 0, 0, FW_BOLD, 0, 0, 0, SHIFTJIS_CHARSET, 0, 0, CLEARTYPE_QUALITY, 0, L"Meiryo UI");
 
+#ifdef WIZTOOL_TEST   /* 診断: --probe は試験版だけ */
     if (cmd && wcsstr(cmd, L"--probe")) {      /* diagnostics: write what the program can read to probe.txt */
         wchar_t p[MAX_PATH]; FILE *f;
         attach();
@@ -1044,6 +1050,8 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, LPWSTR cmd, int show)
         }
         return 0;
     }
+#endif
+#ifdef WIZTOOL_TEST   /* 診断: --snapshot は試験版だけ */
     if (cmd && wcsstr(cmd, L"--snapshot")) {   /* diagnostics: draw the current map into snapshot.bmp */
         wchar_t p[MAX_PATH]; HDC sdc = GetDC(NULL), mdc = CreateCompatibleDC(sdc);
         HBITMAP bmp = CreateCompatibleBitmap(sdc, 500, 520); RECT a = { 0, 0, 500, 480 }, lg = { 0, 480, 500, 520 };
@@ -1061,6 +1069,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, LPWSTR cmd, int show)
         write_bmp(p, mdc, bmp, 500, 520);
         return 0;
     }
+#endif
     load_notes();
 
     mutex = CreateMutexW(NULL, TRUE, L"Wiz7JpAutomap");

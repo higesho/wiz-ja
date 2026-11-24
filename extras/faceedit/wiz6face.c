@@ -11,7 +11,7 @@
  * 画像の読み込み・書き出しは GDI+、貼り付けはクリップボードの画像。
  * 全員まとめての画像 = 7 列 x 6 行に 24x24 を隙間なく並べた 168x144 (またはその整数倍)。
  *
- * 診断: --selftest [--savetest] (読み書きの往復などを確かめて selftest.txt に書く)
+ * 診断（試験版 build.bat test だけ）: --selftest [--savetest] (読み書きの往復などを確かめて selftest.txt に書く)
  *       --snapshot [--sel=N]    (画面を snapshot.bmp に描く)
  */
 #include <windows.h>
@@ -1063,6 +1063,7 @@ static LRESULT CALLBACK WndProc(HWND w, UINT m, WPARAM wp, LPARAM lp)
     return DefWindowProcW(w, m, wp, lp);
 }
 
+#ifdef WIZTOOL_TEST   /* 診断は試験版だけ */
 /* ---------------------------------------------------------------- diagnostics */
 static void selftest(const wchar_t *exe)
 {
@@ -1141,6 +1142,8 @@ static void selftest(const wchar_t *exe)
     fclose(f);
 }
 
+#endif /* WIZTOOL_TEST */
+
 int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, LPWSTR cmd, int show)
 {
     WNDCLASSW wc; MSG msg; wchar_t exe[MAX_PATH], *s; HANDLE mutex; HACCEL acc; RECT r;
@@ -1158,12 +1161,19 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, LPWSTR cmd, int show)
     s = wcsrchr(exe, L'\\'); if (s) *s = 0;
     find_dir(exe);
     if (g_dir[0]) load_all();
+#ifdef WIZTOOL_TEST   /* 診断: --selftest は試験版だけ */
     if (cmd && wcsstr(cmd, L"--selftest")) { selftest(exe); GdiplusShutdown(g_gdip); return 0; }
+#endif
 
     g_font = CreateFontW(-15, 0, 0, 0, FW_NORMAL, 0, 0, 0, SHIFTJIS_CHARSET, 0, 0, CLEARTYPE_QUALITY, 0, L"Meiryo UI");
     g_font_small = CreateFontW(-13, 0, 0, 0, FW_NORMAL, 0, 0, 0, SHIFTJIS_CHARSET, 0, 0, CLEARTYPE_QUALITY, 0, L"Meiryo UI");
 
+#ifdef WIZTOOL_TEST
     if (!(cmd && wcsstr(cmd, L"--snapshot"))) {
+#else
+    (void)cmd;
+    {
+#endif
         mutex = CreateMutexW(NULL, TRUE, L"Wiz6JpFaceEdit");
         if (GetLastError() == ERROR_ALREADY_EXISTS) {
             HWND w = FindWindowW(L"W6FACE", NULL);
@@ -1189,6 +1199,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, LPWSTR cmd, int show)
     g_wnd = CreateWindowExW(0, L"W6FACE", APP_TITLE, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
                             CW_USEDEFAULT, CW_USEDEFAULT, r.right - r.left, r.bottom - r.top, NULL, NULL, inst, NULL);
 
+#ifdef WIZTOOL_TEST   /* 診断: --snapshot は試験版だけ */
     if (cmd && wcsstr(cmd, L"--snapshot")) {   /* draw the window into snapshot.bmp */
         wchar_t p[MAX_PATH]; HDC sdc = GetDC(NULL), mdc = CreateCompatibleDC(sdc);
         HBITMAP bmp = CreateCompatibleBitmap(sdc, CLIENT_W, CLIENT_H); BITMAPINFO bi; DWORD *px; BITMAPFILEHEADER fh; FILE *f;
@@ -1217,6 +1228,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, LPWSTR cmd, int show)
         GdiplusShutdown(g_gdip);
         return 0;
     }
+#endif
 
     ShowWindow(g_wnd, SW_SHOW);
     refresh();

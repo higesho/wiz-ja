@@ -4,9 +4,9 @@
 
 - 紹介ページ: https://higesho.github.io/wiz-ja/
 - 第6作「Wizardry 6: Bane of the Cosmic Forge」の日本語化パッチ: [ダウンロード](https://github.com/higesho/wiz-ja/releases/tag/wiz6-v1.1.1)
-- 第7作「Wizardry 7: Crusaders of the Dark Savant」（Wizardry Gold 版）の日本語化パッチ: [ダウンロード](https://github.com/higesho/wiz-ja/releases/tag/wiz7-v1.1.1)
+- 第7作「Wizardry 7: Crusaders of the Dark Savant」（Wizardry Gold 版）の日本語化パッチ: [ダウンロード](https://github.com/higesho/wiz-ja/releases/tag/wiz7-v1.1.3)
 
-- オプション: ウィザードリィ6・7 の地図ツールと顔グラエディタ: [ダウンロード](https://github.com/higesho/wiz-ja/releases/tag/tools-v1.0)（ソースは `extras/`）
+- オプション: ウィザードリィ6・7 の地図ツールと顔グラエディタ: [ダウンロード](https://github.com/higesho/wiz-ja/releases/tag/tools-v1.1)（ソースは `extras/`）
 
 ゲームのフォルダに、ファイルを上書きで置くだけで日本語になります。使い方は、ダウンロードした zip の中の `説明書.txt` を見てください。
 誤訳や不自然な訳は [Issues](https://github.com/higesho/wiz-ja/issues) で教えてください。
@@ -71,6 +71,7 @@
 - `extras/faceedit/` … 顔グラエディタ。`wiz6face.c`（`BANE\WPORT1〜3.EGA`）、`wiz7face.c`（Gold 版の `RES\BITS\PCA`・`PCB` の BMP と DOS 版の `PORTDATA.VGA`）。
   元の絵は入れておらず、チェックサムで見分けます。
 - ビルドは各フォルダの `_cc*.bat`、配布用の zip は `extras/make_*_release.py` で作ります。
+  `_cc*.bat test` で作る試験版（`out/test/`、診断用のコマンドライン `--probe`・`--snapshot`・`--selftest` と動きの記録 `JPMAP.LOG` 入り）は配布しません。
 
 ## ライセンスなど
 

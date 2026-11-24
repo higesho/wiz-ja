@@ -18,7 +18,7 @@
  * 保存すると、最初の 1 回だけ元のファイルを「.ORIG」を付けて残す。
  * 元の絵は CRC-32 で見分ける (絵そのものはこのプログラムに入れていない)。
  *
- * 診断: --selftest [--savetest] [--ver=gold|dos]  (selftest.txt に書く)
+ * 診断（試験版 build.bat test だけ）: --selftest [--savetest] [--ver=gold|dos]  (selftest.txt に書く)
  *       --snapshot [--sel=N] [--ver=gold|dos]     (snapshot.bmp に描く)
  */
 #include <windows.h>
@@ -1185,6 +1185,7 @@ static LRESULT CALLBACK WndProc(HWND w, UINT m, WPARAM wp, LPARAM lp)
     return DefWindowProcW(w, m, wp, lp);
 }
 
+#ifdef WIZTOOL_TEST   /* 診断は試験版だけ */
 /* ---------------------------------------------------------------- diagnostics */
 static void selftest(const wchar_t *exe)
 {
@@ -1276,10 +1277,16 @@ static void snapshot(const wchar_t *exe)
     free(px);
 }
 
+#endif /* WIZTOOL_TEST */
+
 int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, LPWSTR cmd, int show)
 {
     WNDCLASSW wc; MSG msg; wchar_t exe[MAX_PATH], *s, err[600]; HANDLE mutex; HACCEL acc; RECT r; int i, want = -1;
+#ifdef WIZTOOL_TEST
     int diag = cmd && (wcsstr(cmd, L"--selftest") || wcsstr(cmd, L"--snapshot"));
+#else
+    int diag = 0;   /* 配布版には診断のコマンドラインは無い */
+#endif
     GpStartupInput gsi = { 1, NULL, FALSE, FALSE };
     ACCEL ak[] = {
         { FCONTROL | FVIRTKEY, 'Z', ID_UNDO }, { FCONTROL | FVIRTKEY, 'Y', ID_REDO }, { FCONTROL | FSHIFT | FVIRTKEY, 'Z', ID_REDO },
@@ -1312,7 +1319,9 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, LPWSTR cmd, int show)
     if (cmd && wcsstr(cmd, L"--ver=gold")) want = V_GOLD;
     for (i = 0; i < g_nplace; i++) if (want < 0 || g_place[i].kind == want) { if (load_place(i, err, 600)) break; }
     if (!g_loaded && !diag) { MessageBoxW(NULL, err, APP_TITLE, MB_OK | MB_ICONERROR); return 0; }
+#ifdef WIZTOOL_TEST   /* 診断: --selftest は試験版だけ */
     if (cmd && wcsstr(cmd, L"--selftest")) { selftest(exe); GdiplusShutdown(g_gdip); return 0; }
+#endif
 
     g_font = CreateFontW(-15, 0, 0, 0, FW_NORMAL, 0, 0, 0, SHIFTJIS_CHARSET, 0, 0, CLEARTYPE_QUALITY, 0, L"Meiryo UI");
     g_font_small = CreateFontW(-13, 0, 0, 0, FW_NORMAL, 0, 0, 0, SHIFTJIS_CHARSET, 0, 0, CLEARTYPE_QUALITY, 0, L"Meiryo UI");
@@ -1324,6 +1333,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, LPWSTR cmd, int show)
     AdjustWindowRect(&r, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, FALSE);
     g_wnd = CreateWindowExW(0, L"W7FACE", APP_TITLE, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
                             CW_USEDEFAULT, CW_USEDEFAULT, r.right - r.left, r.bottom - r.top, NULL, NULL, inst, NULL);
+#ifdef WIZTOOL_TEST   /* 診断: --snapshot は試験版だけ */
     if (cmd && wcsstr(cmd, L"--snapshot")) {
         wchar_t *a = wcsstr(cmd, L"--sel=");
         if (a) { int sel = _wtoi(a + 6) - 1; if (sel >= 0 && sel < NFACE) g_sel = sel; }
@@ -1332,6 +1342,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, LPWSTR cmd, int show)
         GdiplusShutdown(g_gdip);
         return 0;
     }
+#endif
     ShowWindow(g_wnd, SW_SHOW);
     refresh();
     acc = CreateAcceleratorTableW(ak, sizeof ak / sizeof ak[0]);

@@ -18,7 +18,7 @@ def deploy():
     if not (GAME / "WIZARD.EXE").exists():
         sys.exit(f"WIZARD.EXE が見つかりません: {GAME}")
     DEST.mkdir(exist_ok=True)
-    shutil.copy2(MOD / "build" / "wing32.dll", GAME / "wing32.dll")
+    shutil.copy2(MOD / "build" / "test" / "wing32.dll", GAME / "wing32.dll")   # 試験版（src/build.bat test で作る）
     shutil.copy2(MOD / "translation" / "msg_ja.txt", DEST / "msg_ja.txt")
     shutil.copy2(MOD / "translation" / "ui_ja.txt", DEST / "ui_ja.txt")
     shutil.copy2(MOD / "translation" / "scen_ja.txt", DEST / "scen_ja.txt")

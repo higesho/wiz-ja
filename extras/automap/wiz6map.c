@@ -350,8 +350,12 @@ static int in_maze_state(unsigned s)
 
 
 /* small log of what the program decided (BANE\JPMAP.LOG, kept under 64 KB) */
+/* 動きの記録 JPMAP.LOG（調べるとき用）は試験版（build.bat test）だけ。配布版では何もしない */
 static void logw(const wchar_t *fmt, ...)
 {
+#ifndef WIZTOOL_TEST
+    (void)fmt;
+#else
     wchar_t p[MAX_PATH], line[256]; FILE *f; va_list ap; SYSTEMTIME t; WIN32_FILE_ATTRIBUTE_DATA a;
     if (!g_bane[0]) return;
     path_in_bane(p, L"JPMAP.LOG");
@@ -362,6 +366,7 @@ static void logw(const wchar_t *fmt, ...)
     va_start(ap, fmt); vswprintf(line, 256, fmt, ap); va_end(ap);
     fwprintf(f, L"%02d:%02d:%02d %s\n", t.wHour, t.wMinute, t.wSecond, line);
     fclose(f);
+#endif
 }
 
 /* returns 1 if the picture should be redrawn */
@@ -962,6 +967,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, LPWSTR cmd, int show)
     GetModuleFileNameW(NULL, exe, MAX_PATH);
     s = wcsrchr(exe, L'\\'); if (s) *s = 0;
     find_bane_from(exe);
+#ifdef WIZTOOL_TEST   /* 診断: --probe は試験版だけ */
     if (cmd && wcsstr(cmd, L"--probe")) {      /* diagnostics: write what the program can read to probe.txt */
         wchar_t p[MAX_PATH]; FILE *f;
         attach();
@@ -975,11 +981,13 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, LPWSTR cmd, int show)
         }
         return 0;
     }
+#endif
     if (g_bane[0]) { load_map_data(); read_vis(L"JPMAP.CUR", NULL, 1); load_notes(); g_dirty = 0; }
 
     g_font = CreateFontW(-16, 0, 0, 0, FW_NORMAL, 0, 0, 0, SHIFTJIS_CHARSET, 0, 0, CLEARTYPE_QUALITY, 0, L"Meiryo UI");
     g_font_small = CreateFontW(-13, 0, 0, 0, FW_NORMAL, 0, 0, 0, SHIFTJIS_CHARSET, 0, 0, CLEARTYPE_QUALITY, 0, L"Meiryo UI");
     g_font_mark = CreateFontW(-12, 0, 0, 0, FW_BOLD, 0, 0, 0, SHIFTJIS_CHARSET, 0, 0, CLEARTYPE_QUALITY, 0, L"Meiryo UI");
+#ifdef WIZTOOL_TEST   /* 診断: --snapshot は試験版だけ */
     if (cmd && wcsstr(cmd, L"--snapshot")) {   /* diagnostics: draw the current map into snapshot.bmp */
         wchar_t p[MAX_PATH]; HDC sdc = GetDC(NULL), mdc = CreateCompatibleDC(sdc);
         HBITMAP bmp = CreateCompatibleBitmap(sdc, 500, 520); RECT a = { 0, 0, 500, 480 }, lg = { 0, 480, 500, 520 };
@@ -1002,6 +1010,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, LPWSTR cmd, int show)
         }
         return 0;
     }
+#endif
 
     mutex = CreateMutexW(NULL, TRUE, L"Wiz6JpAutomap");
     if (GetLastError() == ERROR_ALREADY_EXISTS) {

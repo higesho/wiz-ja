@@ -1,0 +1,28 @@
+#pragma code_page(65001)
+#include <winver.h>
+
+1 VERSIONINFO
+FILEVERSION 1,1,0,0
+PRODUCTVERSION 1,1,0,0
+FILEOS 0x40004L
+FILETYPE VFT_APP
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "041104B0"
+    BEGIN
+      VALUE "CompanyName", "higesho"
+      VALUE "ProductName", "ウィザードリィ6 日本語化パッチ（非公式）"
+      VALUE "FileDescription", "ウィザードリィ6 オートマップ（日本語化パッチのオプション・非公式）"
+      VALUE "FileVersion", "1.1.0.0"
+      VALUE "ProductVersion", "1.1"
+      VALUE "InternalName", "Wizardry6_Automap"
+      VALUE "OriginalFilename", "Wiz6Map.exe"
+      VALUE "Comments", "https://higesho.github.io/wiz-ja/wiz6/"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x0411, 1200
+  END
+END
